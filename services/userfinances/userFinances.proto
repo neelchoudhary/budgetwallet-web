@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package userfinances;
+option go_package="github.com/neelchoudhary/budgetwallet-api-server/services/userfinances";
+
+import "services/shared/shared.proto";
+
+message GetFinancialInstitutionsRequest {
+}
+
+message GetFinancialInstitutionsResponse {
+    repeated shared.FinancialInstitution financial_institutions = 1;
+}
+
+message GetFinancialAccountsRequest {
+    int64 item_id = 1;
+}
+
+message GetFinancialAccountsResponse {
+    repeated shared.FinancialAccount financial_accounts = 1;
+}
+
+message ToggleFinancialAccountRequest {
+    int64 item_id = 1;
+    int64 account_id = 2;
+    bool selected = 3;
+}
+
+message ToggleFinancialAccountResponse {
+    bool success = 1;
+}
+
+message GetFinancialTransactionsRequest {
+    int64 item_id = 1;
+}
+
+message GetFinancialTransactionsResponse {
+    repeated shared.FinancialTransaction financial_transactions = 1;
+}
+
+service UserFinancesService {
+    rpc GetFinancialInstitutions(GetFinancialInstitutionsRequest) returns (GetFinancialInstitutionsResponse) {};
+    rpc GetFinancialAccounts(GetFinancialAccountsRequest) returns (GetFinancialAccountsResponse) {};
+    rpc ToggleFinancialAccount(ToggleFinancialAccountRequest) returns (ToggleFinancialAccountResponse) {};
+    rpc GetFinancialTransactions(GetFinancialTransactionsRequest) returns (GetFinancialTransactionsResponse) {};
+}

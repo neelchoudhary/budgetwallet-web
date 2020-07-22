@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package auth;
+option go_package="github.com/neelchoudhary/budgetwallet-api-server/services/auth";
+
+message User {
+    int64 id = 1;
+    string fullname = 2;
+    string email = 3;
+    string password = 4;
+    string created_on = 5;
+}
+
+message SignUpUser {
+    string fullname = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message LoginUser {
+    string email = 1;
+    string password = 2;
+}
+
+message SignupRequest {
+    SignUpUser signUpUser = 1;
+}
+
+message SignupResponse {
+    bool success = 1;
+}
+
+message LoginRequest {
+    LoginUser loginUser = 1;
+}
+
+message LoginResponse {
+    bool success = 1;
+    string token = 2;
+}
+
+service AuthService {
+    rpc Signup(SignupRequest) returns (SignupResponse) {};
+    rpc Login(LoginRequest) returns (LoginResponse) {};
+}

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package financialcategories;
+option go_package="github.com/neelchoudhary/budgetwallet-api-server/services/financialcategories";
+
+message FinancialCategory {
+    int64 id = 1;
+    string name = 2;
+    string group = 3;
+}
+
+message GetFinancialCategoriesResponse {
+    repeated FinancialCategory financial_categories = 1;
+}
+
+message Empty {}
+
+service FinancialCategoryService {
+    rpc GetFinancialCategories(Empty) returns (GetFinancialCategoriesResponse) {};
+}

@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package dataprocessing;
+option go_package="github.com/neelchoudhary/budgetwallet-api-server/services/dataprocessing";
+
+message AccountDailySnapshot {
+    int64 item_id = 1;
+    int64 account_id = 2;
+    string date = 3;
+    double start_day_balance = 4;
+    double end_day_balance = 5;
+    double cash_out = 6;
+    double cash_in = 7;
+}
+
+message AccountMonthlySnapshot {
+    int64 item_id = 1;
+    int64 account_id = 2;
+    string date = 3;
+    double start_month_balance = 4;
+    double end_month_balance = 5;
+    double cash_out = 6;
+    double cash_in = 7;
+}
+
+message GetAccountDailySnapshotsRequest {
+    int64 item_id = 1;
+    int64 account_id = 2;
+}
+
+message GetAccountDailySnapshotsResponse {
+    repeated AccountDailySnapshot account_daily_snapshots = 1;
+}
+
+message GetAccountMonthlySnapshotsRequest {
+    int64 item_id = 1;
+    int64 account_id = 2;
+}
+
+message GetAccountMonthlySnapshotsResponse {
+    repeated AccountMonthlySnapshot account_monthly_snapshots = 1;
+}
+
+message Empty {}
+
+service DataProcessingService {
+    rpc GetAccountDailySnapshots(GetAccountDailySnapshotsRequest) returns (GetAccountDailySnapshotsResponse) {};
+    rpc GetAccountMonthlySnapshots(GetAccountMonthlySnapshotsRequest) returns (GetAccountMonthlySnapshotsResponse) {};
+    // get estimated monthly income
+    // get monthly savings
+    // get category spending/saving
+    // get recurring transactions
+}

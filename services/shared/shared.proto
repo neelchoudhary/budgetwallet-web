@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package shared;
+option go_package="github.com/neelchoudhary/budgetwallet-api-server/services/shared";
+
+message FinancialAccount {
+    int64 id = 1;
+    int64 user_id = 2;
+    int64 item_id = 3;
+    string plaid_account_id = 4;
+    double current_balance = 5;
+    double available_balance = 6;
+    string account_name = 7;
+    string official_name = 8;
+    string account_type = 9;
+    string account_subtype = 10;
+    string account_mask = 11;
+    bool selected = 12;
+}
+
+message FinancialInstitution {
+    int64 id = 1;
+    int64 user_id = 2;
+    string institution_name = 3;
+    string institution_color = 4;
+    string institution_logo = 5;
+    string error_code = 6;
+    string error_dev_msg = 7;
+    string error_user_msg = 8;
+}
+
+message FinancialTransaction {
+    int64 id = 1;
+    int64 user_id = 2;
+    int64 item_id = 3;
+    int64 account_id = 4;
+    int64 category_id = 5;
+    string plaid_account_id = 6;
+    string plaid_category_id = 7;
+    string plaid_transaction_id = 8;
+    string name = 9;
+    double amount = 10;
+    string date = 11;
+    bool pending = 12;
+}
