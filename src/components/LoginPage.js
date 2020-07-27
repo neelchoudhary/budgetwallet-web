@@ -2,7 +2,7 @@ import React from 'react'
 import { signInAPI } from '../utils/api'
 import { Redirect } from 'react-router-dom'
 
-export default class Login extends React.Component {
+export default class LoginPage extends React.Component {
 
     constructor(props) {
         super(props)
@@ -19,9 +19,10 @@ export default class Login extends React.Component {
         event.preventDefault()
         signInAPI(this.state.email, this.state.password)
             .then(() => {
-                this.setState({loggedIn: true})
+                this.props.onLogin()
+                // this.setState({ loggedIn: true })
             }).catch((error) => {
-                this.setState({loggedIn: false})
+                // this.setState({ loggedIn: false })
                 console.warn("Error signing in: " + error)
                 // this.setState({
                 //     error: 'There was an error fetching the account info.'
@@ -37,7 +38,7 @@ export default class Login extends React.Component {
     }
 
     render() {
-        if (this.state.loggedIn === true) {
+        if (this.props.isAuthed === true) {
             return <Redirect to="/accounts" />;
         }
 

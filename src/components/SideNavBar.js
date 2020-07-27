@@ -45,16 +45,16 @@ export default class SideNavBar extends React.Component {
                 <ul className='nav-ul'>
 
                     <li style={selected[0] ? selectedStyle : unSelectedStyle}>
-                        <NavLink to='/' exact className='nav-link' onClick={() => this.test(0)}>Analysis</NavLink>
+                        <NavLink to='/analysis' exact className='nav-link' onClick={() => this.test(0)}>Analysis</NavLink>
                     </li>
                     <li style={selected[1] ? selectedStyle : unSelectedStyle}>
-                        <NavLink to='/' exact className='nav-link' onClick={() => this.test(1)}>Budget</NavLink>
+                        <NavLink to='/budget' exact className='nav-link' onClick={() => this.test(1)}>Budget</NavLink>
                     </li>
                     <li style={selected[2] ? selectedStyle : unSelectedStyle}>
-                        <NavLink to='/' exact className='nav-link' onClick={() => this.test(2)}>History</NavLink>
+                        <NavLink to='/history' exact className='nav-link' onClick={() => this.test(2)}>History</NavLink>
                     </li>
                     <li style={selected[3] ? selectedStyle : unSelectedStyle}>
-                        <NavLink to='/' exact className='nav-link' onClick={() => this.test(3)}>Transactions</NavLink>
+                        <NavLink to='/transactions' exact className='nav-link' onClick={() => this.test(3)}>Transactions</NavLink>
                     </li>
                     <li style={selected[4] ? selectedStyle : unSelectedStyle}>
                         <NavLink to='/accounts' exact className='nav-link' onClick={() => this.test(4)}>Accounts</NavLink>

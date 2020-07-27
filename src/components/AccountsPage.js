@@ -1,6 +1,6 @@
 import React from 'react'
 import { getInstitutionsAPI, getAccountsFromInstitutionIDAPI, toggleAccountSelectionAPI, updateInstitutionAPI, updateAccountsAPI } from '../utils/api'
-import { PlaidLink } from 'react-plaid-link';
+// import { PlaidLink } from 'react-plaid-link';
 
 
 export default class AccountsPage extends React.Component {
@@ -198,11 +198,9 @@ class InstitutionTile extends React.Component {
                     <div className='row'>
                         <h3 className='institution-title'>{name}</h3>
                         {status === "Connected" ?
-                            <img className='institution-status-img' src={require('../images/check-circle.svg')} alt='Connected'></img> :
-                            <img className='institution-status-img' src={require('../images/error-circle.svg')} alt='Error'></img>
+                            <svg className='institution-status-img' fill='black' xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> :
+                            <svg className='institution-status-img' fill='crimson' xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
                         }
-
-                        {/* <h3>{status}</h3> */}
                     </div>
                     <div className="loader" style={loaderStyle}></div>
                     <div className='row institution-manage' onClick={this.expandManageMenu}>

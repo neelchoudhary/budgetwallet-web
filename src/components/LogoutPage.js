@@ -2,7 +2,7 @@ import React from 'react'
 import { signOutAPI } from '../utils/api'
 import { Redirect } from 'react-router-dom'
 
-export default class Logout extends React.Component {
+export default class LogoutPage extends React.Component {
 
     constructor(props) {
         super(props)
@@ -23,18 +23,20 @@ export default class Logout extends React.Component {
         // Delete token cookie
         signOutAPI()
             .then(() => {
-                this.setState({ loggedOut: true })
+                this.props.onLogout();
+                // this.setState({ loggedOut: true })
             }).catch((error) => {
+                this.props.onLogout();
                 console.warn("Error logging out: " + error)
-                this.setState({ loggedOut: true })
+                // this.setState({ loggedOut: true })
             })
     }
 
 
     render() {
-        if (this.state.loggedOut === true) {
-            return <Redirect to="/login" />;
-        }
+        // if (this.state.loggedOut === true) {
+        //     return <Redirect to="/login" />;
+        // }
         return null
     }
 
