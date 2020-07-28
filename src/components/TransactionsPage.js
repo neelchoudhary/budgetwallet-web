@@ -180,88 +180,91 @@ export default class TransactionsPage extends React.Component {
 
     render() {
         return (
-            <div className='transactions-page'>
-                <h3 className='page-title'>Transactions</h3>
-                {/* <input type='text' placeholder='Search...'></input> */}
-                <div className='transactions-sort-div'>
-                    <Dropdown onSelect={(c) => this.onSelectSort(c)}>
-                        <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
-                            <div className='dropdown-sort-text-div'>
-                                <p className='dropdown-sort-text-desc'>Sort By: </p>
-                                <p className='dropdown-sort-text-main'>{this.state.sortBy}</p>
-                            </div>
-                        </Dropdown.Toggle>
+            <div className='page'>
+                <div className='transactions-page'>
+                    <h3 className='page-title'>Transactions</h3>
+                    {/* <input type='text' placeholder='Search...'></input> */}
+                    <div className='transactions-sort-div'>
+                        <Dropdown onSelect={(c) => this.onSelectSort(c)}>
+                            <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
+                                <div className='dropdown-sort-text-div'>
+                                    <p className='dropdown-sort-text-desc'>Sort By: </p>
+                                    <p className='dropdown-sort-text-main'>{this.state.sortBy}</p>
+                                </div>
+                            </Dropdown.Toggle>
 
-                        <Dropdown.Menu>
-                            {this.sortByChoices().map((choice) => (
-                                <Dropdown.Item eventKey={choice}>{choice}</Dropdown.Item>
-                            ))}
-                        </Dropdown.Menu>
-                    </Dropdown>
-                    <Dropdown onSelect={(c) => this.onSelectAccountFilter(c)}>
-                        <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
-                            <div className='dropdown-sort-text-div'>
-                                <p className='dropdown-sort-text-desc'>Account: </p>
-                                <p className='dropdown-sort-text-main'>{this.state.filterAccountSelection}</p>
-                            </div>
-                        </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                {this.sortByChoices().map((choice) => (
+                                    <Dropdown.Item eventKey={choice}>{choice}</Dropdown.Item>
+                                ))}
+                            </Dropdown.Menu>
+                        </Dropdown>
+                        <Dropdown onSelect={(c) => this.onSelectAccountFilter(c)}>
+                            <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
+                                <div className='dropdown-sort-text-div'>
+                                    <p className='dropdown-sort-text-desc'>Account: </p>
+                                    <p className='dropdown-sort-text-main'>{this.state.filterAccountSelection}</p>
+                                </div>
+                            </Dropdown.Toggle>
 
-                        <Dropdown.Menu>
-                            <Dropdown.Item eventKey={JSON.stringify({ id: -1, name: "All Accounts" })}>{"All Accounts"}</Dropdown.Item>
-                            {this.state.connectedInstitutions.map((inst) => (
-                                <React.Fragment>
-                                    <Dropdown.Header>{inst.name}</Dropdown.Header>
-                                    {inst.accounts.map((account) => {
-                                        return <Dropdown.Item eventKey={JSON.stringify({ id: account.id, name: `${account.name} ****${account.mask}` })}>{`${account.name} ****${account.mask}`}</Dropdown.Item>
-                                    })}
-                                </React.Fragment>
-                            ))}
-                        </Dropdown.Menu>
-                    </Dropdown>
+                            <Dropdown.Menu>
+                                <Dropdown.Item eventKey={JSON.stringify({ id: -1, name: "All Accounts" })}>{"All Accounts"}</Dropdown.Item>
+                                {this.state.connectedInstitutions.map((inst) => (
+                                    <React.Fragment>
+                                        <Dropdown.Header>{inst.name}</Dropdown.Header>
+                                        {inst.accounts.map((account) => {
+                                            return <Dropdown.Item eventKey={JSON.stringify({ id: account.id, name: `${account.name} ****${account.mask}` })}>{`${account.name} ****${account.mask}`}</Dropdown.Item>
+                                        })}
+                                    </React.Fragment>
+                                ))}
+                            </Dropdown.Menu>
+                        </Dropdown>
 
-                    <Dropdown onSelect={(c) => this.onSelectCategoryFilter(c)}>
-                        <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
-                            <div className='dropdown-sort-text-div'>
-                                <p className='dropdown-sort-text-desc'>Category: </p>
-                                <p className='dropdown-sort-text-main'>{this.state.filterCategorySelection}</p>
-                            </div>
-                        </Dropdown.Toggle>
+                        <Dropdown onSelect={(c) => this.onSelectCategoryFilter(c)}>
+                            <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
+                                <div className='dropdown-sort-text-div'>
+                                    <p className='dropdown-sort-text-desc'>Category: </p>
+                                    <p className='dropdown-sort-text-main'>{this.state.filterCategorySelection}</p>
+                                </div>
+                            </Dropdown.Toggle>
 
-                        <Dropdown.Menu>
-                            <FormControl
-                                autoFocus
-                                className="mx-3 my-2 w-auto"
-                                placeholder="Type to filter..."
-                                onChange={(e) => this.onChangeCategorySearch(e.target.value)}
-                                value={this.state.filterCategorySearchValue}
-                            />
-                            <Dropdown.Item eventKey={JSON.stringify({ id: -1, name: "All Categories" })}>{"All Categories"}</Dropdown.Item>
-                            {this.state.categories.filter((category) => category.category.toLowerCase().includes(this.state.filterCategorySearchValue.toLowerCase())).map((category) => {
-                                return <Dropdown.Item eventKey={JSON.stringify({ id: category.id, name: category.category })}>{category.category}</Dropdown.Item>
-                            })}
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </div>
+                            <Dropdown.Menu>
+                                <FormControl
+                                    autoFocus
+                                    className="mx-3 my-2 w-auto"
+                                    placeholder="Type to filter..."
+                                    onChange={(e) => this.onChangeCategorySearch(e.target.value)}
+                                    value={this.state.filterCategorySearchValue}
+                                />
+                                <Dropdown.Item eventKey={JSON.stringify({ id: -1, name: "All Categories" })}>{"All Categories"}</Dropdown.Item>
+                                {this.state.categories.filter((category) => category.category.toLowerCase().includes(this.state.filterCategorySearchValue.toLowerCase())).map((category) => {
+                                    return <Dropdown.Item eventKey={JSON.stringify({ id: category.id, name: category.category })}>{category.category}</Dropdown.Item>
+                                })}
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    </div>
 
-                <div className='transactions-search-div'>
-                    <FormControl
-                        placeholder="Type to search..."
-                        aria-label="Search Transactions"
-                        onChange={(e) => this.onSearchTransactions(e.target.value)}
-                        value={this.state.transactionSearchValue}
+                    <div className='transactions-search-div'>
+                        <FormControl
+                            placeholder="Type to search..."
+                            aria-label="Search Transactions"
+                            onChange={(e) => this.onSearchTransactions(e.target.value)}
+                            value={this.state.transactionSearchValue}
+                        />
+                    </div>
+
+                    <TransactionsList
+                        transactions={this.state.transactions}
+                        sortBy={this.state.sortBy}
+                        sortByChoices={this.sortByChoices()}
+                        filterAccountIdSelection={this.state.filterAccountIdSelection}
+                        filterCategoryIdSelection={this.state.filterCategoryIdSelection}
+                        transactionSearchValue={this.state.transactionSearchValue}
+                        currentPage={this.state.paginationValue}
+                        onSetPagination={this.onSetPagination}
                     />
+                    {/* <div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/good-ware" title="Good Ware">Good Ware</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/becris" title="Becris">Becris</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/monkik" title="monkik">monkik</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/itim2101" title="itim2101">itim2101</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/srip" title="srip">srip</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/dmitri13" title="dmitri13">dmitri13</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/eucalyp" title="Eucalyp">Eucalyp</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/surang" title="surang">surang</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/wanicon" title="wanicon">wanicon</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/xnimrodx" title="xnimrodx">xnimrodx</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/ultimatearm" title="ultimatearm">ultimatearm</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/fjstudio" title="fjstudio">fjstudio</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/iconixar" title="iconixar">iconixar</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">Pixel perfect</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/smalllikeart" title="smalllikeart">smalllikeart</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div> */}
                 </div>
-
-                <TransactionsList
-                    transactions={this.state.transactions}
-                    sortBy={this.state.sortBy}
-                    sortByChoices={this.sortByChoices()}
-                    filterAccountIdSelection={this.state.filterAccountIdSelection}
-                    filterCategoryIdSelection={this.state.filterCategoryIdSelection}
-                    transactionSearchValue={this.state.transactionSearchValue}
-                    currentPage={this.state.paginationValue}
-                    onSetPagination={this.onSetPagination}
-                />
             </div>
         )
     }
@@ -373,7 +376,7 @@ function TransactionsCard({ id, img, name, amount, date, pending, category, acco
         <div className='transaction-card row'>
             <div className='row'>
                 {img ?
-                    <img className='institution-expand-img' src={require(`../images/${img}`)} alt=''></img> :
+                    <img className='transaction-category-img' src={require(`../images/categories/${img}`)} alt=''></img> :
                     <FaUtensils size={35} id='category-img' />
                 }
                 <div style={{ "maxWidth": "30vw" }}>

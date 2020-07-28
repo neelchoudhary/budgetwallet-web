@@ -111,11 +111,12 @@ export default class AccountsPage extends React.Component {
 
     render() {
         return (
-            <div className='accounts-page'>
-                <div className='row'>
-                    <h3 className='page-title'>Accounts</h3>
-                    <button className='accounts-connect-btn' onClick={this.addInstitution}>Connect Account</button>
-                    {/* <PlaidLink className='accounts-connect-btn'
+            <div className='page'>
+                <div className='accounts-page'>
+                    <div className='row'>
+                        <h3 className='page-title'>Accounts</h3>
+                        <button className='accounts-connect-btn' onClick={this.addInstitution}>Connect Account</button>
+                        {/* <PlaidLink className='accounts-connect-btn'
                         clientName='Plaid Quickstart'
                         // countryCodes=['US']
                         env='development'
@@ -126,9 +127,11 @@ export default class AccountsPage extends React.Component {
                         onSuccess={this.onAddInstitutionSuccess}>
                         Connect Account
                     </PlaidLink> */}
+                    </div>
+                    <InstitutionsList institutions={this.state.connectedInstitutions} toggleAccountSelect={this.toggleAccountSelect} fetchConnectedAccounts={this.fetchConnectedAccounts} />
                 </div>
-                <InstitutionsList institutions={this.state.connectedInstitutions} toggleAccountSelect={this.toggleAccountSelect} fetchConnectedAccounts={this.fetchConnectedAccounts} />
             </div>
+
         )
     }
 }
