@@ -1,6 +1,5 @@
 import React from 'react'
 import { signOutAPI } from '../utils/api'
-import { Redirect } from 'react-router-dom'
 
 export default class LogoutPage extends React.Component {
 

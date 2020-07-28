@@ -191,15 +191,15 @@ class InstitutionTile extends React.Component {
             display: this.state.loading ? "block" : "none",
         };
         const { institution, toggleAccountSelect } = this.props
-        const { id, name, status, logo, accounts } = institution
+        const { id, name, status, logo, color, accounts } = institution
         return (
             <div className='institution-card'>
                 <div className='institution-header'>
                     <div className='row'>
                         <h3 className='institution-title'>{name}</h3>
                         {status === "Connected" ?
-                            <svg className='institution-status-img' fill='black' xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> :
-                            <svg className='institution-status-img' fill='crimson' xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                            <svg className='institution-status-img' fill='black' xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none" /><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg> :
+                            <svg className='institution-status-img' fill='crimson' xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none" /><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /></svg>
                         }
                     </div>
                     <div className="loader" style={loaderStyle}></div>
@@ -214,21 +214,32 @@ class InstitutionTile extends React.Component {
                     </div>
                 </div>
                 < hr className='institution-line' />
-                <AccountsList accounts={accounts} logo={logo} toggleAccountSelect={toggleAccountSelect} />
+                <AccountsList accounts={accounts} instLogo={logo} instColor={color} instName={name} toggleAccountSelect={toggleAccountSelect} />
             </div>
         )
     }
 
 }
 
-function AccountsList({ accounts, logo, toggleAccountSelect }) {
+function AccountsList({ accounts, instLogo, instColor, instName, toggleAccountSelect }) {
     return (
         <ul className='accounts-list'>
-            {accounts.map((account, index) => {
+            {accounts.map((account) => {
                 const { id, itemId, name, mask, balance, selected } = account
                 return (
                     <li key={id}>
-                        <AccountCard name={name} mask={mask} balance={balance} selected={selected} logo={logo} accountId={id} itemId={itemId} toggleAccountSelect={toggleAccountSelect} />
+                        <AccountCard
+                            name={name}
+                            mask={mask}
+                            balance={balance}
+                            selected={selected}
+                            instLogo={instLogo}
+                            instColor={instColor}
+                            instName={instName}
+                            accountId={id}
+                            itemId={itemId}
+                            toggleAccountSelect={toggleAccountSelect}
+                        />
                     </li>
                 )
             })}
@@ -238,15 +249,14 @@ function AccountsList({ accounts, logo, toggleAccountSelect }) {
 
 class AccountCard extends React.Component {
     render() {
-        const { name, mask, balance, selected, logo, accountId, itemId, toggleAccountSelect } = this.props
+        const { name, mask, balance, selected, instLogo, instColor, instName, accountId, itemId, toggleAccountSelect } = this.props
         return (
             <div className='account-card'>
                 <div className='account-card-left-side'>
-                    <img
-                        className='account-logo'
-                        src={`data:image/jpeg;base64,${logo}`}
-                        alt='Logo'
-                    />
+                    {instLogo ?
+                        <img className='account-logo' src={`data:image/jpeg;base64,${instLogo}`} alt='Logo' /> :
+                        <div className='account-logo-backup' style={{ "backgroundColor": instColor }}>{instName.slice(0, 1)}</div>
+                    }
                     <div className='account-details'>
                         <h2 className='header-large'>
                             {`${name} ****${mask}`}

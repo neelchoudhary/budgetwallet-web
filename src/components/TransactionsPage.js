@@ -1,7 +1,9 @@
 import React from 'react'
 import { getInstitutionsAPI, getAccountsFromInstitutionIDAPI, getTransactionsAPI, getCategoriesAPI } from '../utils/api'
 import { FaUtensils } from "react-icons/fa";
-
+import Dropdown from 'react-bootstrap/Dropdown';
+import FormControl from 'react-bootstrap/FormControl';
+import Pagination from 'react-bootstrap/Pagination';
 
 export default class TransactionsPage extends React.Component {
     constructor(props) {
@@ -10,13 +12,71 @@ export default class TransactionsPage extends React.Component {
         this.state = {
             transactions: [],
             connectedInstitutions: [],
-            categories: []
+            categories: [],
+            sortBy: this.sortByChoices()[0],
+            filterAccountSelection: "All Accounts",
+            filterAccountIdSelection: -1,
+            filterCategorySelection: "All Categories",
+            filterCategoryIdSelection: -1,
+            filterCategorySearchValue: "",
+            transactionSearchValue: "",
+            paginationValue: 1
         }
 
         this.fetchConnectedAccounts = this.fetchConnectedAccounts.bind(this)
         this.updateInstitutionState = this.updateInstitutionState.bind(this)
         this.fetchCategories = this.fetchCategories.bind(this)
         this.fetchTransactions = this.fetchTransactions.bind(this)
+    }
+
+    sortByChoices = () => {
+        return ["Most Recent", "Amount Asc", "Amount Desc"]
+    }
+
+    onSelectSort = (choice) => {
+        this.resetPagination()
+        this.setState({ sortBy: choice })
+    }
+
+    onSelectAccountFilter = (c) => {
+        this.resetPagination()
+        let accountChoice = JSON.parse(c)
+        this.setState({ filterAccountIdSelection: accountChoice.id, filterAccountSelection: accountChoice.name })
+    }
+
+    onSelectCategoryFilter = (c) => {
+        this.resetPagination()
+        let categoryChoice = JSON.parse(c)
+        this.setState({ filterCategoryIdSelection: categoryChoice.id, filterCategorySelection: categoryChoice.name })
+    }
+
+    onChangeCategorySearch = (value) => {
+        this.setState({ filterCategorySearchValue: value })
+    }
+
+    onSearchTransactions = (value) => {
+        this.resetPagination()
+        this.setState({ transactionSearchValue: value })
+    }
+
+    onSetPagination = (value) => {
+        this.setState({ paginationValue: value })
+    }
+
+    onPaginationNext = () => {
+        this.setState(({ paginationValue }) => {
+            return { paginationValue: paginationValue + 1 }
+        })
+    }
+
+    onPaginationPrev = () => {
+        this.setState(({ paginationValue }) => {
+            return { paginationValue: Math.max(paginationValue - 1, 0) }
+        })
+    }
+
+    resetPagination = () => {
+        this.onSetPagination(1)
     }
 
     componentDidMount() {
@@ -43,8 +103,6 @@ export default class TransactionsPage extends React.Component {
                     })
                 this.fetchCategories()
                 this.fetchTransactions()
-                // this.setState({ready: true})
-
             })
             .catch((error) => {
                 console.warn("Error fetching account info: " + error)
@@ -95,11 +153,12 @@ export default class TransactionsPage extends React.Component {
                         let categoryId = t.categoryId
 
                         let inst = this.state.connectedInstitutions.find((inst) => inst.id === itemId)
-                        t.logo = inst.logo
+                        t.instLogo = inst.logo
                         t.instColor = inst.color
+                        t.instName = inst.name
 
                         let account = inst.accounts.find((account) => account.id === accountId)
-                        t.mask = account.mask
+                        t.accountMask = account.mask
 
                         let category = this.state.categories.find((c) => c.id === categoryId)
                         t.category = category.category
@@ -122,41 +181,204 @@ export default class TransactionsPage extends React.Component {
     render() {
         return (
             <div className='transactions-page'>
-                <div className='row'>
-                    <h3 className='page-title'>Transactions</h3>
-                </div>
+                <h3 className='page-title'>Transactions</h3>
                 {/* <input type='text' placeholder='Search...'></input> */}
-                <TransactionsList transactions={this.state.transactions} />
+                <div className='transactions-sort-div'>
+                    <Dropdown onSelect={(c) => this.onSelectSort(c)}>
+                        <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
+                            <div className='dropdown-sort-text-div'>
+                                <p className='dropdown-sort-text-desc'>Sort By: </p>
+                                <p className='dropdown-sort-text-main'>{this.state.sortBy}</p>
+                            </div>
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu>
+                            {this.sortByChoices().map((choice) => (
+                                <Dropdown.Item eventKey={choice}>{choice}</Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                    <Dropdown onSelect={(c) => this.onSelectAccountFilter(c)}>
+                        <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
+                            <div className='dropdown-sort-text-div'>
+                                <p className='dropdown-sort-text-desc'>Account: </p>
+                                <p className='dropdown-sort-text-main'>{this.state.filterAccountSelection}</p>
+                            </div>
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu>
+                            <Dropdown.Item eventKey={JSON.stringify({ id: -1, name: "All Accounts" })}>{"All Accounts"}</Dropdown.Item>
+                            {this.state.connectedInstitutions.map((inst) => (
+                                <React.Fragment>
+                                    <Dropdown.Header>{inst.name}</Dropdown.Header>
+                                    {inst.accounts.map((account) => {
+                                        return <Dropdown.Item eventKey={JSON.stringify({ id: account.id, name: `${account.name} ****${account.mask}` })}>{`${account.name} ****${account.mask}`}</Dropdown.Item>
+                                    })}
+                                </React.Fragment>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
+
+                    <Dropdown onSelect={(c) => this.onSelectCategoryFilter(c)}>
+                        <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
+                            <div className='dropdown-sort-text-div'>
+                                <p className='dropdown-sort-text-desc'>Category: </p>
+                                <p className='dropdown-sort-text-main'>{this.state.filterCategorySelection}</p>
+                            </div>
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu>
+                            <FormControl
+                                autoFocus
+                                className="mx-3 my-2 w-auto"
+                                placeholder="Type to filter..."
+                                onChange={(e) => this.onChangeCategorySearch(e.target.value)}
+                                value={this.state.filterCategorySearchValue}
+                            />
+                            <Dropdown.Item eventKey={JSON.stringify({ id: -1, name: "All Categories" })}>{"All Categories"}</Dropdown.Item>
+                            {this.state.categories.filter((category) => category.category.toLowerCase().includes(this.state.filterCategorySearchValue.toLowerCase())).map((category) => {
+                                return <Dropdown.Item eventKey={JSON.stringify({ id: category.id, name: category.category })}>{category.category}</Dropdown.Item>
+                            })}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </div>
+
+                <div className='transactions-search-div'>
+                    <FormControl
+                        placeholder="Type to search..."
+                        aria-label="Search Transactions"
+                        onChange={(e) => this.onSearchTransactions(e.target.value)}
+                        value={this.state.transactionSearchValue}
+                    />
+                </div>
+
+                <TransactionsList
+                    transactions={this.state.transactions}
+                    sortBy={this.state.sortBy}
+                    sortByChoices={this.sortByChoices()}
+                    filterAccountIdSelection={this.state.filterAccountIdSelection}
+                    filterCategoryIdSelection={this.state.filterCategoryIdSelection}
+                    transactionSearchValue={this.state.transactionSearchValue}
+                    currentPage={this.state.paginationValue}
+                    onSetPagination={this.onSetPagination}
+                />
             </div>
         )
     }
 }
 
-function TransactionsList({ transactions }) {
-    transactions.sort((t1,t2) => t2.date.localeCompare(t1.date))
+function TransactionsList({ transactions, sortBy, sortByChoices, filterAccountIdSelection, filterCategoryIdSelection, transactionSearchValue, currentPage, onSetPagination }) {
+    if (sortBy === sortByChoices[0]) {
+        transactions.sort((t1, t2) => t2.date.localeCompare(t1.date))
+    } else if (sortBy === sortByChoices[1]) {
+        transactions.sort((t1, t2) => t2.amount - t1.amount)
+    } else if (sortBy === sortByChoices[2]) {
+        transactions.sort((t1, t2) => t1.amount - t2.amount)
+    } else {
+        transactions.sort((t1, t2) => t2.date.localeCompare(t1.date))
+    }
+
+    if (filterAccountIdSelection !== -1) {
+        transactions = transactions.filter((t) => t.accountId == filterAccountIdSelection)
+    }
+
+    if (filterCategoryIdSelection !== -1) {
+        transactions = transactions.filter((t) => t.categoryId == filterCategoryIdSelection)
+    }
+
+    if (transactionSearchValue != "") {
+        transactions = transactions.filter((t) => t.name.toLowerCase().includes(transactionSearchValue.toLowerCase()))
+    }
+
+    const numTransactions = transactions.length
+
+    // Transactions per page
+    const pageLimit = 20
+    const pages = Math.ceil(numTransactions / pageLimit)
+
+    const ellipseLimit = 2;
+    const pagesUpper = Math.min(currentPage + ellipseLimit, pages)
+    const pagesLower = Math.max(currentPage - ellipseLimit, 1)
+
+    let pagesArray = []
+
+    if (pagesLower !== 1) {
+        pagesArray.push(1)
+        pagesArray.push(-1)
+    }
+
+    for (let i = pagesLower; i <= pagesUpper; i++) {
+        pagesArray.push(i)
+    }
+
+    if (pagesUpper !== pages) {
+        pagesArray.push(-1)
+        pagesArray.push(pages)
+    }
+
+    const start = Math.max((currentPage - 1) * pageLimit, 0)
+    const end = Math.min(start + pageLimit, numTransactions)
+    transactions = transactions.slice(start, end)
 
     return (
-        <ul className='transactions-list'>
-            {transactions.map((transaction, index) => {
-                const { id, img, name, amount, date, pending, category, mask, logo, instColor, categoryId, itemId, accountId } = transaction
-                return (
-                    <li key={id}>
-                        <TransactionsCard id={id} img={img} name={name} amount={amount} date={date} pending={pending} category={category} mask={mask} logo={logo} instColor={instColor} categoryId={categoryId} itemId={itemId} accountId={accountId} />
-                    </li>
-                )
-            })}
-        </ul>
+        <div className='transactions-list'>
+            <div className='row'>
+                <p>Viewing {pages === 0 ? 0 : start + 1}-{end} of {numTransactions} Transactions</p>
+                <div className='transactions-pagination'>
+                    <Pagination>
+                        {/* <Pagination.First onClick={() => onSetPagination(1)} /> */}
+                        <Pagination.Prev onClick={() => onSetPagination(Math.max(currentPage - 1, 1))} />
+                        {pagesArray.map((e, index) => {
+                            if (e === -1) {
+                                return <Pagination.Ellipsis />
+                            } else {
+                                return <Pagination.Item active={e === currentPage} onClick={() => onSetPagination(e)}>{e}</Pagination.Item>
+                            }
+                        })}
+                        <Pagination.Next onClick={() => onSetPagination(Math.min(currentPage + 1, pages))} />
+                        {/* <Pagination.Last onClick={() => onSetPagination(pages)} /> */}
+                    </Pagination>
+                </div>
+            </div>
+
+            <ul>
+                {transactions.map((transaction) => {
+                    const { id, img, name, amount, date, pending, category, accountMask, instLogo, instColor, instName } = transaction
+                    return (
+                        <li key={id}>
+                            <TransactionsCard
+                                id={id}
+                                img={img}
+                                name={name}
+                                amount={amount}
+                                date={date}
+                                pending={pending}
+                                category={category}
+                                accountMask={accountMask}
+                                instLogo={instLogo}
+                                instColor={instColor}
+                                instName={instName}
+                            />
+                        </li>
+                    )
+                })}
+            </ul>
+
+        </div>
     )
 }
 
-function TransactionsCard({ id, img, name, amount, date, pending, category, mask, logo, instColor, categoryId, itemId, accountId }) {
+function TransactionsCard({ id, img, name, amount, date, pending, category, accountMask, instLogo, instColor, instName }) {
     return (
         <div className='transaction-card row'>
             <div className='row'>
-                <FaUtensils size={35} id='category-img' />
-                <div>
-                    <h3 id='category-text' >{category}</h3>
-                    <h3 id='name-text' >{name}</h3>
+                {img ?
+                    <img className='institution-expand-img' src={require(`../images/${img}`)} alt=''></img> :
+                    <FaUtensils size={35} id='category-img' />
+                }
+                <div style={{ "maxWidth": "30vw" }}>
+                    <h3 id='category-text'>{category}</h3>
+                    <h3 id='name-text'>{name}</h3>
                 </div>
             </div>
 
@@ -167,12 +389,11 @@ function TransactionsCard({ id, img, name, amount, date, pending, category, mask
                     <h3 id='date-text'>{date}</h3>
                 </div>
                 <div className='row account-info-container'>
-                    <img
-                        className='account-logo'
-                        src={`data:image/jpeg;base64,${logo}`}
-                        alt='Logo'
-                    />
-                    <h3 id='mask-text'>****{mask}</h3>
+                    {instLogo ?
+                        <img className='account-logo' src={`data:image/jpeg;base64,${instLogo}`} alt='Logo' /> :
+                        <div className='account-logo-backup' style={{ "backgroundColor": instColor }}>{instName.slice(0, 1)}</div>
+                    }
+                    <h3 id='mask-text'>****{accountMask}</h3>
                 </div>
             </div>
 

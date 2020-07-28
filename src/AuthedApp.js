@@ -13,7 +13,7 @@ export default class AuthedApp extends React.Component {
     super(props)
 
     this.state = {
-      isAuthed: false,
+      isAuthed: true, // FOR DEVELOPMENT ONLY
       onLogin: () => {
         this.setState({ isAuthed: true });
       },
