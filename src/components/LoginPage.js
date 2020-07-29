@@ -9,7 +9,7 @@ export default class LoginPage extends React.Component {
         this.state = {
             email: "",
             password: "",
-            loggedIn: false
+            loginError: "",
         }
 
         this.signIn = this.signIn.bind(this)
@@ -20,13 +20,13 @@ export default class LoginPage extends React.Component {
         signInAPI(this.state.email, this.state.password)
             .then(() => {
                 this.props.onLogin()
-                // this.setState({ loggedIn: true })
             }).catch((error) => {
-                // this.setState({ loggedIn: false })
                 console.warn("Error signing in: " + error)
-                // this.setState({
-                //     error: 'There was an error fetching the account info.'
-                // })
+                if (error.message === "Auth error") {
+                    this.setState({ loginError: "Incorrect email/password combination, please try again." })
+                } else {
+                    this.setState({ loginError: "Something went wrong, please try again." })
+                }
             })
 
     }
@@ -43,19 +43,28 @@ export default class LoginPage extends React.Component {
         }
 
         return (
-            <div className='sign-up-page'>
-                <h1 className='sign-up-header'> Sign In</h1>
-                <form className='sign-up-form'>
-                    <div>
-                        <input className="form-field" type="text" placeholder="Email" value={this.state.email} onChange={(event) => this.handleChange(event, "email")} required />
-                    </div>
-                    <div>
-                        <input className="form-field" type="password" placeholder="Password" value={this.state.password} onChange={(event) => this.handleChange(event, "password")} required />
-                    </div>
-                    <div>
-                        <input className="form-submit" type="submit" name="submit" value="Sign In" onClick={this.signIn} />
-                    </div>
-                </form>
+            <div className='sign-in-page'>
+                <div className='sign-in-container'>
+                    <h1 className='sign-in-header'> Sign in</h1>
+                    <form className='sign-in-form'>
+                        <div className='form-input'>
+                            <label htmlFor="email-form">Email</label>
+                            <input className="form-field" id='email-form' type="text" placeholder="johnsmith@domain.com" value={this.state.email} onChange={(event) => this.handleChange(event, "email")} required />
+                        </div>
+                        <div className='form-input'>
+                            <label htmlFor="password-form">Password</label>
+                            <input className="form-field" id='password-form' type="password" placeholder="my password" value={this.state.password} onChange={(event) => this.handleChange(event, "password")} required />
+                        </div>
+                        <p className='error-text' style={{ "display": this.state.loginError === "" ? "none" : "inherit" }}>{this.state.loginError}</p>
+                        <div>
+                            <input className="form-submit" type="submit" name="submit" value="Sign in" onClick={this.signIn} />
+                        </div>
+                        <div className='row sign-in-options'>
+                            <a href="#">Create an Account</a>
+                            <a href="#">Forgot my Password</a>
+                        </div>
+                    </form>
+                </div>
             </div>)
     }
 

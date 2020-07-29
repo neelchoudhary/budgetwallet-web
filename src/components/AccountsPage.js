@@ -1,6 +1,8 @@
 import React from 'react'
-import { getInstitutionsAPI, getAccountsFromInstitutionIDAPI, toggleAccountSelectionAPI, updateInstitutionAPI, updateAccountsAPI } from '../utils/api'
-// import { PlaidLink } from 'react-plaid-link';
+import { getInstitutionsAPI, getAccountsFromInstitutionIDAPI, toggleAccountSelectionAPI, updateInstitutionAPI, updateAccountsAPI, getLinkTokenAPI, linkBankAccountAPI, removeBankAccountAPI } from '../utils/api'
+import { usePlaidLink } from 'react-plaid-link';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 
 export default class AccountsPage extends React.Component {
@@ -9,7 +11,8 @@ export default class AccountsPage extends React.Component {
         super(props)
 
         this.state = {
-            connectedInstitutions: []
+            connectedInstitutions: [],
+            linkToken: ""
         }
 
         this.fetchConnectedAccounts = this.fetchConnectedAccounts.bind(this)
@@ -102,11 +105,30 @@ export default class AccountsPage extends React.Component {
     }
 
     addInstitution() {
-
+        // Get Link Token from server
+        getLinkTokenAPI()
+            .then((linkToken) => {
+                this.setState({ linkToken: linkToken })
+            })
+            .catch((error) => {
+                console.warn("Error fetching link token: " + error)
+                // this.setState({
+                //     error: 'There was an error fetching the account info.'
+                // })
+            })
     }
 
     onAddInstitutionSuccess(token, metadata) {
-
+        linkBankAccountAPI(token, metadata.institution.institution_id)
+            .then(() => {
+                this.fetchConnectedAccounts()
+            })
+            .catch((error) => {
+                console.warn("Error adding new account: " + error)
+                // this.setState({
+                //     error: 'There was an error fetching the account info.'
+                // })
+            })
     }
 
     render() {
@@ -116,17 +138,9 @@ export default class AccountsPage extends React.Component {
                     <div className='row'>
                         <h3 className='page-title'>Accounts</h3>
                         <button className='accounts-connect-btn' onClick={this.addInstitution}>Connect Account</button>
-                        {/* <PlaidLink className='accounts-connect-btn'
-                        clientName='Plaid Quickstart'
-                        // countryCodes=['US']
-                        env='development'
-                        token=''
-                        // product=['transactions']
-                        //   webhook: "https://neelchoudhary.com:1443/webhook/1",
-                        language='en'
-                        onSuccess={this.onAddInstitutionSuccess}>
-                        Connect Account
-                    </PlaidLink> */}
+                        {this.state.linkToken !== "" &&
+                            <PlaidLinkModal linkToken={this.state.linkToken} onCancel={() => this.setState({ linkToken: "" })} onLinkSuccess={(token, metadata) => this.onAddInstitutionSuccess(token, metadata)} />
+                        }
                     </div>
                     <InstitutionsList institutions={this.state.connectedInstitutions} toggleAccountSelect={this.toggleAccountSelect} fetchConnectedAccounts={this.fetchConnectedAccounts} />
                 </div>
@@ -157,6 +171,8 @@ class InstitutionTile extends React.Component {
         this.state = {
             manageMenuActive: false,
             loading: false,
+            removeBankAttempt: false,
+            removeBankID: -1
         }
     }
 
@@ -180,6 +196,28 @@ class InstitutionTile extends React.Component {
             }).catch((error) => {
                 this.setState({ loading: false, manageMenuActive: false })
                 console.warn("Error fetching toggling account: " + error)
+                // this.setState({
+                //     error: 'There was an error fetching the account info.'
+                // })
+            })
+    }
+
+    attemptRemoveBank = (institutionId) => {
+        this.setState({removeBankAttempt: true, removeBankID: institutionId})
+     }
+
+    cancelRemoveBank = () => {
+        this.setState({removeBankAttempt: false, removeBankID: -1})
+    }
+
+
+    removeInstitution = (institutionId) => {
+        removeBankAccountAPI(institutionId)
+            .then(() => {
+                this.props.fetchConnectedAccounts()
+            })
+            .catch((error) => {
+                console.warn("Error removing account: " + error)
                 // this.setState({
                 //     error: 'There was an error fetching the account info.'
                 // })
@@ -210,14 +248,15 @@ class InstitutionTile extends React.Component {
                         <h3>Manage</h3>
                         <img className='institution-expand-img' src={require('../images/expand-down.svg')} alt=''></img>
                         <div className="dropdown-content" style={moreOptionsStyle}>
-                            <a onClick={() => this.updateAccounts(id)}>Update Account</a>
-                            <a href="#/">Edit Connection</a>
-                            <a href="#/">Remove Account</a>
+                            <button onClick={() => this.updateAccounts(id)}>Update Accounts</button>
+                            <button>Update Connection</button>
+                            <button onClick={() => this.attemptRemoveBank(id)}>Remove Bank</button>
                         </div>
                     </div>
                 </div>
                 < hr className='institution-line' />
                 <AccountsList accounts={accounts} instLogo={logo} instColor={color} instName={name} toggleAccountSelect={toggleAccountSelect} />
+                {this.state.removeBankAttempt === true && <RemoveBankModal removeBankAccount={() => this.removeInstitution(this.state.removeBankID)} cancelModal={() => this.cancelRemoveBank()} />}
             </div>
         )
     }
@@ -228,13 +267,14 @@ function AccountsList({ accounts, instLogo, instColor, instName, toggleAccountSe
     return (
         <ul className='accounts-list'>
             {accounts.map((account) => {
-                const { id, itemId, name, mask, balance, selected } = account
+                const { id, itemId, name, mask, balance, availableBalance, selected } = account
                 return (
                     <li key={id}>
                         <AccountCard
                             name={name}
                             mask={mask}
                             balance={balance}
+                            availableBalance={availableBalance}
                             selected={selected}
                             instLogo={instLogo}
                             instColor={instColor}
@@ -252,7 +292,7 @@ function AccountsList({ accounts, instLogo, instColor, instName, toggleAccountSe
 
 class AccountCard extends React.Component {
     render() {
-        const { name, mask, balance, selected, instLogo, instColor, instName, accountId, itemId, toggleAccountSelect } = this.props
+        const { name, mask, balance, availableBalance, selected, instLogo, instColor, instName, accountId, itemId, toggleAccountSelect } = this.props
         return (
             <div className='account-card'>
                 <div className='account-card-left-side'>
@@ -265,7 +305,7 @@ class AccountCard extends React.Component {
                             {`${name} ****${mask}`}
                         </h2>
                         <h2 className='header-small'>
-                            {`$${balance.toFixed(2)}`}
+                            {`$${balance.toFixed(2)} ∙ $${availableBalance.toFixed(2)}`}
                         </h2>
                     </div>
                 </div>
@@ -273,4 +313,73 @@ class AccountCard extends React.Component {
             </div>
         )
     }
+}
+
+
+const PlaidLinkModal = ({ linkToken, onCancel, onLinkSuccess }) => {
+    const onSuccess = React.useCallback((token, metadata) => {
+        onLinkSuccess(token, metadata)
+    }, []);
+
+    const onExit = React.useCallback((error, metadata) => {
+        onCancel()
+    }, []);
+
+    const config = {
+        token: linkToken,
+        onSuccess,
+        onExit,
+    };
+
+    const { open, ready, error } = usePlaidLink(config);
+
+    const [show, setShow] = React.useState(true);
+
+    const handleContinue = () => {
+        open()
+        setShow(false)
+    }
+    const handleClose = () => onCancel();
+
+    return (
+        <Modal
+            show={show}
+            onHide={handleClose}
+            backdrop="static"
+            keyboard={false}>
+            <Modal.Header closeButton>
+                <Modal.Title>Connect Bank Account using Plaid</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                Use Plaid to add your bank account.
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="danger" onClick={handleClose}>
+                    Cancel
+          </Button>
+                <Button variant="primary" onClick={() => handleContinue()} disabled={!ready}>Continue</Button>
+            </Modal.Footer>
+        </Modal >
+    );
+};
+
+function RemoveBankModal({ removeBankAccount, cancelModal }) {
+    return (
+        <Modal
+            show={true}
+            onHide={cancelModal}>
+            <Modal.Header closeButton>
+                <Modal.Title>Remove Bank Account</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                Are you sure you want to remove your bank account connection?
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="primary" onClick={cancelModal}>
+                    Cancel
+          </Button>
+                <Button variant="danger" onClick={() => removeBankAccount()}>Continue</Button>
+            </Modal.Footer>
+        </Modal >
+    );
 }

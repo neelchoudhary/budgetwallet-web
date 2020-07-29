@@ -5,6 +5,7 @@ import { Route, Switch, Redirect } from 'react-router-dom'
 import LogoutPage from './components/LogoutPage';
 import TransactionsPage from './components/TransactionsPage';
 import LoginPage from './components/LoginPage';
+import HistoryPage from './components/HistoryPage';
 
 
 export default class AuthedApp extends React.Component {
@@ -13,7 +14,7 @@ export default class AuthedApp extends React.Component {
     super(props)
 
     this.state = {
-      isAuthed: true, // FOR DEVELOPMENT ONLY
+      isAuthed: false, // FOR DEVELOPMENT ONLY (should be false)
       onLogin: () => {
         this.setState({ isAuthed: true });
       },
@@ -35,6 +36,12 @@ export default class AuthedApp extends React.Component {
             <div className="App">
               <LoginPage onLogin={onLogin} isAuthed={isAuthed} />
             </div>} />
+          <Route exact path='/history' render={props => (
+            <AuthRequired isAuthed={isAuthed}>
+              <SideNavBar />
+              <HistoryPage />
+            </AuthRequired>
+          )} />
           <Route exact path='/transactions' render={props => (
             <AuthRequired isAuthed={isAuthed}>
               <SideNavBar />
@@ -44,13 +51,13 @@ export default class AuthedApp extends React.Component {
           <Route exact path='/accounts' render={props => (
             <AuthRequired isAuthed={isAuthed}>
               <SideNavBar />
-              <AccountsPage/>
+              <AccountsPage />
             </AuthRequired>
           )} />
           <Route exact path='/logout' render={props => (
             <AuthRequired isAuthed={isAuthed}>
               <SideNavBar />
-              <LogoutPage onLogout={onLogout}/>
+              <LogoutPage onLogout={onLogout} />
             </AuthRequired>
           )} />
           <Route render={props =>

@@ -1,9 +1,10 @@
 import React from 'react'
 import { getInstitutionsAPI, getAccountsFromInstitutionIDAPI, getTransactionsAPI, getCategoriesAPI } from '../utils/api'
-import { FaUtensils } from "react-icons/fa";
 import Dropdown from 'react-bootstrap/Dropdown';
 import FormControl from 'react-bootstrap/FormControl';
 import Pagination from 'react-bootstrap/Pagination';
+import Badge from 'react-bootstrap/Badge';
+
 
 export default class TransactionsPage extends React.Component {
     constructor(props) {
@@ -183,7 +184,6 @@ export default class TransactionsPage extends React.Component {
             <div className='page'>
                 <div className='transactions-page'>
                     <h3 className='page-title'>Transactions</h3>
-                    {/* <input type='text' placeholder='Search...'></input> */}
                     <div className='transactions-sort-div'>
                         <Dropdown onSelect={(c) => this.onSelectSort(c)}>
                             <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
@@ -319,6 +319,7 @@ function TransactionsList({ transactions, sortBy, sortByChoices, filterAccountId
         pagesArray.push(pages)
     }
 
+    const totalValue = transactions.reduce((sum, t) => (t.amount + sum), 0)
     const start = Math.max((currentPage - 1) * pageLimit, 0)
     const end = Math.min(start + pageLimit, numTransactions)
     transactions = transactions.slice(start, end)
@@ -327,6 +328,7 @@ function TransactionsList({ transactions, sortBy, sortByChoices, filterAccountId
         <div className='transactions-list'>
             <div className='row'>
                 <p>Viewing {pages === 0 ? 0 : start + 1}-{end} of {numTransactions} Transactions</p>
+                <p>Cumulative Value: ${totalValue.toFixed(2)}</p>
                 <div className='transactions-pagination'>
                     <Pagination>
                         {/* <Pagination.First onClick={() => onSetPagination(1)} /> */}
@@ -375,12 +377,13 @@ function TransactionsCard({ id, img, name, amount, date, pending, category, acco
     return (
         <div className='transaction-card row'>
             <div className='row'>
-                {img ?
-                    <img className='transaction-category-img' src={require(`../images/categories/${img}`)} alt=''></img> :
-                    <FaUtensils size={35} id='category-img' />
-                }
+                <img className='transaction-category-img' src={require(`../images/categories/${img}`)} alt=''></img>
+
                 <div style={{ "maxWidth": "30vw" }}>
-                    <h3 id='category-text'>{category}</h3>
+                    <div className='row transaction-category-div'>
+                        <h3 id='category-text'>{category}</h3>
+                        {pending && <Badge variant="secondary">Pending</Badge>}
+                    </div>
                     <h3 id='name-text'>{name}</h3>
                 </div>
             </div>
@@ -399,8 +402,6 @@ function TransactionsCard({ id, img, name, amount, date, pending, category, acco
                     <h3 id='mask-text'>****{accountMask}</h3>
                 </div>
             </div>
-
-            {/* <h3 id='mask-text'>{pending ? 'pending' : ''}</h3> */}
         </div>
     )
 }

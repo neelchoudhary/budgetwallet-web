@@ -105,9 +105,12 @@ export function getAccountsFromInstitutionIDAPI(institutionId) {
                         {
                             id: account.array[0],
                             itemId: account.array[2],
-                            name: account.array[6],
+                            name: account.array[7] ?? account.array[6],
                             balance: account.array[4] ?? 0,
+                            availableBalance: account.array[5] ?? 0,
                             mask: account.array[10],
+                            type: account.array[8],
+                            subtype: account.array[9],
                             selected: (account.array[11]) ? true : false
                         }
                     )
@@ -339,6 +342,170 @@ export function getCategoriesAPI() {
                     )
                 })
                 return categories
+            },
+            // most likely a connection error
+            (error) => {
+                throw new Error(error)
+            }
+        )
+}
+
+export function getDailyAccountSnapshotsAPI(accountId) {
+    return fetch(`http://localhost:5000/api/dataprocessing/getAccountDailySnapshots/${accountId}`, {
+        credentials: 'include',
+        method: 'get',
+        headers: {
+            'Accept': 'application/json',
+        }
+    })
+        .then(res => {
+            return res.json()
+        })
+        .then(
+            (result) => {
+                if (result.details && result.details.includes("token is expired")) {
+                    throw new Error("Auth error")
+                }
+
+                const dailySnapshots = result.map((dailySnapshot) => {
+                    return (
+                        {
+                            accountId: dailySnapshot.array[1],
+                            date: dailySnapshot.array[2],
+                            startBalance: dailySnapshot.array[3],
+                            endBalance: dailySnapshot.array[4],
+                            cashOut: dailySnapshot.array[5],
+                            cashIn: dailySnapshot.array[6],
+                        }
+                    )
+                })
+                return dailySnapshots
+            },
+            // most likely a connection error
+            (error) => {
+                throw new Error(error)
+            }
+        )
+}
+
+export function getMonthlyAccountSnapshotsAPI(accountId) {
+    return fetch(`http://localhost:5000/api/dataprocessing/getAccountMonthlySnapshots/${accountId}`, {
+        credentials: 'include',
+        method: 'get',
+        headers: {
+            'Accept': 'application/json',
+        }
+    })
+        .then(res => {
+            return res.json()
+        })
+        .then(
+            (result) => {
+                if (result.details && result.details.includes("token is expired")) {
+                    throw new Error("Auth error")
+                }
+
+                const monthlySnapshots = result.map((monthlySnapshots) => {
+                    return (
+                        {
+                            accountId: monthlySnapshots.array[1],
+                            date: monthlySnapshots.array[2],
+                            startBalance: monthlySnapshots.array[3],
+                            endBalance: monthlySnapshots.array[4],
+                            cashOut: monthlySnapshots.array[5],
+                            cashIn: monthlySnapshots.array[6],
+                        }
+                    )
+                })
+                return monthlySnapshots
+            },
+            // most likely a connection error
+            (error) => {
+                throw new Error(error)
+            }
+        )
+}
+
+export function getLinkTokenAPI() {
+    return fetch(`http://localhost:5000/api/plaidFinances/getLinkToken`, {
+        credentials: 'include',
+        method: 'get',
+        headers: {
+            'Accept': 'application/json',
+        }
+    })
+        .then(res => {
+            return res.json()
+        })
+        .then(
+            (result) => {
+                if (result.details && result.details.includes("token is expired")) {
+                    throw new Error("Auth error")
+                }
+                return result.linkToken
+            },
+            // most likely a connection error
+            (error) => {
+                throw new Error(error)
+            }
+        )
+}
+
+export function linkBankAccountAPI(publicToken, instId) {
+    let data = new URLSearchParams()
+    data.append('publicToken', publicToken)
+    data.append('plaidInstitutionId', instId)
+    return fetch(`http://localhost:5000/api/plaidFinances/linkFinancialInstitution`, {
+        credentials: 'include',
+        method: 'post',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: data
+    })
+        .then(res => {
+            return res.json()
+        })
+        .then(
+            (result) => {
+                if (result.details && result.details.includes("token is expired")) {
+                    throw new Error("Auth error")
+                } else if (result.details) {
+                    throw new Error(result.details)
+                }
+                return
+            },
+            // most likely a connection error
+            (error) => {
+                throw new Error(error)
+            }
+        )
+}
+
+export function removeBankAccountAPI(itemId) {
+    let data = new URLSearchParams()
+    data.append('itemId', itemId)
+    return fetch(`http://localhost:5000/api/plaidFinances/removeFinancialInstitution`, {
+        credentials: 'include',
+        method: 'post',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: data
+    })
+        .then(res => {
+            return res.json()
+        })
+        .then(
+            (result) => {
+                if (result.details && result.details.includes("token is expired")) {
+                    throw new Error("Auth error")
+                } else if (result.details) {
+                    throw new Error(result.details)
+                }
+                return
             },
             // most likely a connection error
             (error) => {
