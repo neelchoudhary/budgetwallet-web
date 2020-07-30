@@ -6,6 +6,7 @@ import LogoutPage from './components/LogoutPage';
 import TransactionsPage from './components/TransactionsPage';
 import LoginPage from './components/LoginPage';
 import HistoryPage from './components/HistoryPage';
+import CreateAccountPage from './components/CreateAccountPage';
 
 
 export default class AuthedApp extends React.Component {
@@ -35,6 +36,10 @@ export default class AuthedApp extends React.Component {
           <Route exact path='/login' render={props =>
             <div className="App">
               <LoginPage onLogin={onLogin} isAuthed={isAuthed} />
+            </div>} />
+          <Route exact path='/signup' render={props =>
+            <div className="App">
+              <CreateAccountPage onLogin={onLogin} isAuthed={isAuthed} />
             </div>} />
           <Route exact path='/history' render={props => (
             <AuthRequired isAuthed={isAuthed}>

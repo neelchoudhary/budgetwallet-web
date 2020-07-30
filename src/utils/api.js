@@ -48,6 +48,37 @@ export function signOutAPI() {
         )
 }
 
+export function signupAPI(fullname, email, password) {
+    let data = new URLSearchParams();
+    data.append('fullname', fullname);
+    data.append('email', email);
+    data.append('password', password);
+    return fetch("http://localhost:5000/api/auth/signup", {
+        credentials: 'include',
+        method: 'post',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: data
+    })
+        .then(res => res.json())
+        .then((result) => {
+            if (result.details) {
+                throw new Error("Signup error")
+            }
+            return result
+        },
+            // Note: it's important to handle errors here
+            // instead of a catch() block so that we don't swallow
+            // exceptions from actual bugs in components.
+            (error) => {
+                console.log(error)
+                throw new Error("Signup error")
+            }
+        )
+}
+
 
 export function getInstitutionsAPI() {
     return fetch("http://localhost:5000/api/userfinances/getFinancialInstitutions", {

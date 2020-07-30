@@ -290,7 +290,7 @@ function TransactionsList({ transactions, sortBy, sortByChoices, filterAccountId
     }
 
     if (transactionSearchValue != "") {
-        transactions = transactions.filter((t) => t.name.toLowerCase().includes(transactionSearchValue.toLowerCase()))
+        transactions = transactions.filter((t) => t.name.toLowerCase().includes(transactionSearchValue.toLowerCase()) || t.category.toLowerCase().includes(transactionSearchValue.toLowerCase()))
     }
 
     const numTransactions = transactions.length

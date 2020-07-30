@@ -17,6 +17,10 @@ export default class LoginPage extends React.Component {
 
     signIn(event) {
         event.preventDefault()
+        var ele = document.getElementById("sign-in-form");
+        var formStatus = ele.checkValidity();
+        ele.reportValidity();
+        if (formStatus) {
         signInAPI(this.state.email, this.state.password)
             .then(() => {
                 this.props.onLogin()
@@ -28,7 +32,7 @@ export default class LoginPage extends React.Component {
                     this.setState({ loginError: "Something went wrong, please try again." })
                 }
             })
-
+        }
     }
 
     handleChange = (event, field) => {
@@ -46,7 +50,7 @@ export default class LoginPage extends React.Component {
             <div className='sign-in-page'>
                 <div className='sign-in-container'>
                     <h1 className='sign-in-header'> Sign in</h1>
-                    <form className='sign-in-form'>
+                    <form className='sign-in-form' id='sign-in-form'>
                         <div className='form-input'>
                             <label htmlFor="email-form">Email</label>
                             <input className="form-field" id='email-form' type="text" placeholder="johnsmith@domain.com" value={this.state.email} onChange={(event) => this.handleChange(event, "email")} required />
@@ -60,7 +64,7 @@ export default class LoginPage extends React.Component {
                             <input className="form-submit" type="submit" name="submit" value="Sign in" onClick={this.signIn} />
                         </div>
                         <div className='row sign-in-options'>
-                            <a href="#">Create an Account</a>
+                            <a href="signup">Create an Account</a>
                             <a href="#">Forgot my Password</a>
                         </div>
                     </form>
