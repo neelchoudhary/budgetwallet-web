@@ -469,10 +469,18 @@ code {
 
 .account-details {
   margin-left: 20px;
+  text-transform: capitalize;
 }
 
 .account-details .header-large {
   margin-bottom: 10px;
+}
+
+.account-mask {
+  padding: 0;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 300;
 }
 
 .account-checkbox {

@@ -267,7 +267,7 @@ function AccountsList({ accounts, instLogo, instColor, instName, toggleAccountSe
     return (
         <ul className='accounts-list'>
             {accounts.map((account) => {
-                const { id, itemId, name, mask, balance, availableBalance, selected } = account
+                const { id, itemId, name, mask, balance, availableBalance, type, subtype, selected } = account
                 return (
                     <li key={id}>
                         <AccountCard
@@ -275,6 +275,8 @@ function AccountsList({ accounts, instLogo, instColor, instName, toggleAccountSe
                             mask={mask}
                             balance={balance}
                             availableBalance={availableBalance}
+                            type={type}
+                            subtype={subtype}
                             selected={selected}
                             instLogo={instLogo}
                             instColor={instColor}
@@ -292,7 +294,7 @@ function AccountsList({ accounts, instLogo, instColor, instName, toggleAccountSe
 
 class AccountCard extends React.Component {
     render() {
-        const { name, mask, balance, availableBalance, selected, instLogo, instColor, instName, accountId, itemId, toggleAccountSelect } = this.props
+        const { name, mask, balance, availableBalance, type, subtype, selected, instLogo, instColor, instName, accountId, itemId, toggleAccountSelect } = this.props
         return (
             <div className='account-card'>
                 <div className='account-card-left-side'>
@@ -302,14 +304,17 @@ class AccountCard extends React.Component {
                     }
                     <div className='account-details'>
                         <h2 className='header-large'>
-                            {`${name} ****${mask}`}
+                            {`${name}`}
                         </h2>
                         <h2 className='header-small'>
-                            {`$${balance.toFixed(2)} ∙ $${availableBalance.toFixed(2)}`}
+                            {`$${balance.toFixed(2)} ∙ $${availableBalance.toFixed(2)} ∙ ${subtype}`}
                         </h2>
                     </div>
                 </div>
-                <input className='account-checkbox' type="checkbox" checked={selected} onChange={() => toggleAccountSelect(itemId, accountId, !selected)} />
+                <div className='account-card-right-side'>
+                    <h2 className='account-mask'>∙∙∙∙ {mask}</h2>
+                </div>
+                {/* <input className='account-checkbox' type="checkbox" checked={selected} onChange={() => toggleAccountSelect(itemId, accountId, !selected)} /> */}
             </div>
         )
     }
