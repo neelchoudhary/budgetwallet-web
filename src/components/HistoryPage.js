@@ -307,7 +307,7 @@ export default class HistoryPage extends React.Component {
                                     fontSize: 25
                                 },
                                 legend: {
-                                    display: false,
+                                    display: true,
                                     position: 'bottom'
                                 }
                             }}

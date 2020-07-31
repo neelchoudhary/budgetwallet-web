@@ -137,8 +137,8 @@ export function getAccountsFromInstitutionIDAPI(institutionId) {
                             id: account.array[0],
                             itemId: account.array[2],
                             name: account.array[7] ?? account.array[6],
-                            balance: account.array[4] ?? 0,
-                            availableBalance: account.array[5] ?? 0,
+                            balance: obfuscateAmount(account.array[4] ?? 0),
+                            availableBalance: obfuscateAmount(account.array[5] ?? 0),
                             mask: account.array[10],
                             type: account.array[8],
                             subtype: account.array[9],
@@ -324,7 +324,7 @@ export function getTransactionsAPI(itemId) {
                             id: transaction.array[0],
                             img: categoryImgMap[transaction.array[4]],
                             name: transaction.array[8],
-                            amount: transaction.array[9],
+                            amount: obfuscateAmount(transaction.array[9]),
                             date: transaction.array[10],
                             pending: transaction.array[11],
                             category: "",
@@ -543,4 +543,13 @@ export function removeBankAccountAPI(itemId) {
                 throw new Error(error)
             }
         )
+}
+
+function obfuscateAmount(balance) {
+    const obfuscate = true;
+    if (obfuscate) {
+        return Math.floor(Math.random() * 100);
+    } else {
+        return balance;
+    }
 }

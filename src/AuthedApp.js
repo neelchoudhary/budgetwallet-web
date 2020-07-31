@@ -7,6 +7,7 @@ import TransactionsPage from './components/TransactionsPage';
 import LoginPage from './components/LoginPage';
 import HistoryPage from './components/HistoryPage';
 import CreateAccountPage from './components/CreateAccountPage';
+import DashboardPage from './components/DashboardPage';
 
 
 export default class AuthedApp extends React.Component {
@@ -15,7 +16,7 @@ export default class AuthedApp extends React.Component {
     super(props)
 
     this.state = {
-      isAuthed: true, // FOR DEVELOPMENT ONLY (should be false)
+      isAuthed: false, // FOR DEVELOPMENT ONLY (should be false)
       onLogin: () => {
         this.setState({ isAuthed: true });
       },
@@ -41,6 +42,12 @@ export default class AuthedApp extends React.Component {
             <div className="App">
               <CreateAccountPage onLogin={onLogin} isAuthed={isAuthed} />
             </div>} />
+          <Route exact path='/dashboard' render={props => (
+            <AuthRequired isAuthed={isAuthed}>
+              <SideNavBar />
+              <DashboardPage />
+            </AuthRequired>
+          )} />
           <Route exact path='/history' render={props => (
             <AuthRequired isAuthed={isAuthed}>
               <SideNavBar />

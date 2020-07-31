@@ -47,6 +47,12 @@ code {
   margin: 0;
 }
 
+.page {
+  height: 100vh;
+  overflow: auto;
+  width: 100%;
+}
+
 /* CREATE ACCOUNT PAGE */
 .sign-up-page {
   display: flex;
@@ -199,6 +205,53 @@ code {
   font-weight: 200;
 }
 
+/* Dashboard Page */
+.dashboard-page {
+  margin-left: 180px;
+  margin-top: 60px;
+  margin-bottom: 60px;
+  width: 55vw;
+}
+
+.dashboard-networth-title {
+  margin: 0;
+  margin-bottom: 2px;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.networth-breakdown-div {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: row;
+  width: 350px;
+  justify-content: space-between;
+}
+
+.networth-breakdown-div .left-side p {
+  margin: 0;
+  margin-bottom: 2px;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.networth-breakdown-div .left-side h2 {
+  font-size: 25px;
+  font-weight: 300;
+}
+
+.networth-breakdown-div .right-side p {
+  margin: 0;
+  margin-bottom: 2px;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.networth-breakdown-div .right-side h2 {
+  font-size: 25px;
+  font-weight: 300;
+}
+
 /* History Page */
 .history-page {
   margin-left: 180px;
@@ -208,12 +261,6 @@ code {
 }
 
 /* Transactions Page */
-
-.page {
-  height: 100vh;
-  overflow: auto;
-  width: 100%;
-}
 
 .transactions-page {
   margin-left: 180px;
