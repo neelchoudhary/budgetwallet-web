@@ -8,6 +8,8 @@ import LoginPage from './components/LoginPage';
 import HistoryPage from './components/HistoryPage';
 import CreateAccountPage from './components/CreateAccountPage';
 import DashboardPage from './components/DashboardPage';
+import { getInstitutionsAPI, getAccountsFromInstitutionIDAPI, getTransactionsAPI, getCategoriesAPI } from './utils/api'
+import { DataProvider, DataConsumer } from './contexts/DataContext'
 
 
 export default class AuthedApp extends React.Component {
@@ -16,7 +18,7 @@ export default class AuthedApp extends React.Component {
     super(props)
 
     this.state = {
-      isAuthed: false, // FOR DEVELOPMENT ONLY (should be false)
+      isAuthed: true, // FOR DEVELOPMENT ONLY (should be false)
       onLogin: () => {
         this.setState({ isAuthed: true });
       },
@@ -45,13 +47,21 @@ export default class AuthedApp extends React.Component {
           <Route exact path='/dashboard' render={props => (
             <AuthRequired isAuthed={isAuthed}>
               <SideNavBar />
-              <DashboardPage />
+              <DataConsumer>
+                {({ connectedInstitutions, transactions, categories, loading }) => (
+                  <DashboardPage connectedInstitutions={connectedInstitutions} transactions={transactions} categories={categories} loading={loading} />
+                )}
+              </DataConsumer>
             </AuthRequired>
           )} />
           <Route exact path='/history' render={props => (
             <AuthRequired isAuthed={isAuthed}>
               <SideNavBar />
-              <HistoryPage />
+              <DataConsumer>
+                {({ connectedInstitutions, loading }) => (
+                  <HistoryPage connectedInstitutions={connectedInstitutions} loading={loading} />
+                )}
+              </DataConsumer>
             </AuthRequired>
           )} />
           <Route exact path='/transactions' render={props => (
@@ -83,10 +93,141 @@ export default class AuthedApp extends React.Component {
   }
 }
 
-function AuthRequired({ isAuthed, children }) {
-  return (isAuthed === false) ?
-    <Redirect to="/login" /> :
-    (<div className="App">
-      {children}
-    </div>)
+class AuthRequired extends React.Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      connectedInstitutions: [],
+      categories: [],
+      transactions: [],
+      fetchConnectedAccounts: () => this.fetchConnectedAccounts(),
+      loading: true,
+    }
+
+    this.fetchConnectedAccounts = this.fetchConnectedAccounts.bind(this)
+    this.updateInstitutionState = this.updateInstitutionState.bind(this)
+    this.fetchCategories = this.fetchCategories.bind(this)
+    this.fetchTransactions = this.fetchTransactions.bind(this)
+  }
+
+  async componentDidMount() {
+    // make api calls
+    if (this.props.isAuthed === true) {
+      await this.fetchCategories()
+      await this.fetchConnectedAccounts()
+      await this.fetchTransactions()
+      this.setState({loading: false})
+    }
+  }
+
+  // Gets all accounts and institutions from server (no dependencies)
+  async fetchConnectedAccounts() {
+    console.log("START FETCH INSTITUTIONS")
+    await getInstitutionsAPI()
+      .then(async (institutions) => {
+        console.log("END FETCH INSTITUTIONS")
+        this.setState({
+          connectedInstitutions: institutions
+        })
+        let promises = [];
+        for (let institution of institutions) {
+          promises.push(await getAccountsFromInstitutionIDAPI(institution.id))
+        }
+
+        console.log("START FETCH ACCOUNTS")
+        Promise.all(promises)
+          .then((allAccounts) => {
+            console.log("END FETCH ACCOUNTS")
+            for (let accounts of allAccounts) {
+              this.updateInstitutionState(accounts)
+            }
+          })
+      })
+      .catch((error) => {
+        console.warn("Error fetching account info: " + error)
+        // this.setState({
+        //     error: 'There was an error fetching the account info.'
+        // })
+      })
+  }
+
+  // match institutions with accounts (dependent on connectedInstitutions) 
+  updateInstitutionState(accounts) {
+    console.log("START & END UPDATE INSTITUTION STATE")
+    this.setState(state => {
+      const connectedInstitutions = state.connectedInstitutions.map((inst, index) => {
+        if (inst.id === accounts.institutionId) {
+          inst.accounts = accounts.accounts;
+          return inst
+        } else {
+          return inst
+        }
+      });
+
+      return {
+        connectedInstitutions: connectedInstitutions,
+      };
+    });
+  }
+
+  // Gets categories from server (no dependencies)
+  async fetchCategories() {
+    console.log("START GET CATEGORIES")
+    await getCategoriesAPI()
+      .then((fetchedCategories) => {
+        console.log("END GET CATEGORIES")
+        this.setState({ categories: fetchedCategories })
+      })
+      .catch((error) => {
+        console.warn("Error fetching transactions: " + error)
+        // this.setState({
+        //     error: 'There was an error fetching the account info.'
+        // })
+      })
+  }
+
+  // Gets transactions from server (dependent on connectedInstitutions & categories)
+  async fetchTransactions() {
+    console.log("START GET TRANSACTIONS")
+    await getTransactionsAPI()
+      .then((fetchedTransactions) => {
+        fetchedTransactions.map((t) => {
+          let itemId = t.itemId
+          let accountId = t.accountId
+          let categoryId = t.categoryId
+
+          let inst = this.state.connectedInstitutions.find((inst) => inst.id === itemId)
+          t.instLogo = inst.logo
+          t.instColor = inst.color
+          t.instName = inst.name
+
+          let account = inst.accounts.find((account) => account.id === accountId)
+          t.accountMask = account.mask
+
+          let category = this.state.categories.find((c) => c.id === categoryId)
+          t.category = category.category
+          return t
+        })
+        console.log("END GET TRANSACTIONS")
+        this.setState({ transactions: fetchedTransactions })
+      })
+      .catch((error) => {
+        console.warn("Error fetching transactions: " + error)
+        // this.setState({
+        //     error: 'There was an error fetching the account info.'
+        // })
+      })
+  }
+
+  render() {
+    const { isAuthed, children } = this.props
+    return (isAuthed === false) ?
+      <Redirect to="/login" /> :
+      (<div className="App">
+        <DataProvider value={this.state}>
+          {children}
+        </DataProvider>
+      </div>)
+  }
 }

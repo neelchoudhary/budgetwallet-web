@@ -1,14 +1,12 @@
 import React from 'react'
 import { Bar, Line } from 'react-chartjs-2';
-import { getInstitutionsAPI, getAccountsFromInstitutionIDAPI, getDailyAccountSnapshotsAPI, getMonthlyAccountSnapshotsAPI } from '../utils/api'
+import { getDailyAccountSnapshotsAPI, getMonthlyAccountSnapshotsAPI } from '../utils/api'
 import Dropdown from 'react-bootstrap/Dropdown';
-
 
 export default class HistoryPage extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            connectedInstitutions: [],
             filterAccountSelection: "None",
             filterAccountIdSelection: -1,
             lineChartData: {},
@@ -18,8 +16,6 @@ export default class HistoryPage extends React.Component {
             totalLineChartDataM: {},
         }
 
-        this.fetchConnectedAccounts = this.fetchConnectedAccounts.bind(this)
-        this.updateInstitutionState = this.updateInstitutionState.bind(this)
         this.fetchDailySnapshots = this.fetchDailySnapshots.bind(this)
         this.fetchMonthlySnapshots = this.fetchMonthlySnapshots.bind(this)
         this.fetchTotalMonthlySnapshots = this.fetchTotalMonthlySnapshots.bind(this)
@@ -27,7 +23,15 @@ export default class HistoryPage extends React.Component {
 
     componentDidMount() {
         this.getChartData()
-        this.fetchConnectedAccounts()
+        if (this.props.loading === false) {
+            this.fetchTotalMonthlySnapshots()
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.loading !== this.props.loading && this.props.loading === false) {
+            this.fetchTotalMonthlySnapshots()
+        }
     }
 
     onSelectAccountFilter = (c) => {
@@ -36,53 +40,6 @@ export default class HistoryPage extends React.Component {
         this.fetchDailySnapshots(accountChoice.id)
         this.fetchMonthlySnapshots(accountChoice.id)
     }
-
-    fetchConnectedAccounts() {
-        getInstitutionsAPI()
-            .then((institutions) => {
-                this.setState({
-                    connectedInstitutions: institutions
-                })
-                let promises = [];
-                for (let institution of institutions) {
-                    promises.push(getAccountsFromInstitutionIDAPI(institution.id))
-                }
-
-                Promise.all(promises)
-                    .then((allAccounts) => {
-                        for (let accounts of allAccounts) {
-                            this.updateInstitutionState(accounts)
-                        }
-                    }).then(() => {
-                        this.fetchTotalMonthlySnapshots()
-                    })
-
-            })
-            .catch((error) => {
-                console.warn("Error fetching account info: " + error)
-                // this.setState({
-                //     error: 'There was an error fetching the account info.'
-                // })
-            })
-    }
-
-    updateInstitutionState(accounts) {
-        this.setState(state => {
-            const connectedInstitutions = state.connectedInstitutions.map((inst) => {
-                if (inst.id === accounts.institutionId) {
-                    inst.accounts = accounts.accounts;
-                    return inst
-                } else {
-                    return inst
-                }
-            });
-
-            return {
-                connectedInstitutions: connectedInstitutions,
-            };
-        });
-    }
-
 
     fetchDailySnapshots(accountId) {
         getDailyAccountSnapshotsAPI(accountId)
@@ -95,11 +52,11 @@ export default class HistoryPage extends React.Component {
                     const fetchedCashOutData = fetchedDailySnapshots.map((dailySnapshot) => (dailySnapshot.cashOut))
                     const fetchedCashInData = fetchedDailySnapshots.map((dailySnapshot) => (dailySnapshot.cashIn))
 
-                    lineChartData.labels = fetchedLabels.slice(0,30)
-                    lineChartData.datasets[0].data = fetchedBalanceData.slice(0,30)
-                    barChartData.labels = fetchedLabels.slice(0,30)
-                    barChartData.datasets[0].data = fetchedCashOutData.slice(0,30)
-                    barChartData.datasets[1].data = fetchedCashInData.slice(0,30)
+                    lineChartData.labels = fetchedLabels.slice(0, 30)
+                    lineChartData.datasets[0].data = fetchedBalanceData.slice(0, 30)
+                    barChartData.labels = fetchedLabels.slice(0, 30)
+                    barChartData.datasets[0].data = fetchedCashOutData.slice(0, 30)
+                    barChartData.datasets[1].data = fetchedCashInData.slice(0, 30)
                     return { lineChartData: lineChartData, barChartData: barChartData }
                 })
             })
@@ -165,7 +122,7 @@ export default class HistoryPage extends React.Component {
                 ]
             }
         })
-        this.state.connectedInstitutions.forEach((inst) => {
+        this.props.connectedInstitutions.forEach((inst) => {
             inst.accounts.forEach((account) => {
                 getDailyAccountSnapshotsAPI(account.id)
                     .then((fetchedMonthlySnapshots) => {
@@ -194,7 +151,6 @@ export default class HistoryPage extends React.Component {
                         this.setState(
                             { totalLineChartDataM: totalLineChartDataM }
                         )
-                        console.log(this.state.totalLineChartDataM)
                     })
                     .catch((error) => {
                         console.warn("Error fetching transactions: " + error)
@@ -207,7 +163,6 @@ export default class HistoryPage extends React.Component {
     }
 
     getChartData() {
-        // Ajax calls here
         this.setState({
             lineChartData: {
                 labels: [],
@@ -324,7 +279,7 @@ export default class HistoryPage extends React.Component {
 
                             <Dropdown.Menu>
                                 <Dropdown.Item eventKey={JSON.stringify({ id: -1, name: "None" })}>{"None"}</Dropdown.Item>
-                                {this.state.connectedInstitutions.map((inst) => (
+                                {this.props.connectedInstitutions.map((inst) => (
                                     <React.Fragment>
                                         <Dropdown.Header>{inst.name}</Dropdown.Header>
                                         {inst.accounts.map((account) => {
@@ -402,11 +357,9 @@ export default class HistoryPage extends React.Component {
                                 }
                             }}
                         />
-
                     </div>
                 </div>
             </div>
         )
     }
-
 }

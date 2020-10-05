@@ -7,6 +7,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   color: rgb(48, 52, 63);
 }
+
+/* h1, h2, h3, h4, h5, h6, p {
+  margin: 0;
+  padding: 0;
+} */
+
 /* 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
@@ -23,17 +29,6 @@ code {
   animation: spin 1.5s linear infinite;
 }
 
-/* Safari */
-@-webkit-keyframes spin {
-  0% { -webkit-transform: rotate(0deg); }
-  100% { -webkit-transform: rotate(360deg); }
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 .App {
   display: flex;
   background-color: white;
@@ -43,6 +38,14 @@ code {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
+  margin: 0;
+}
+
+.row-start {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
   align-items: center;
   margin: 0;
 }
@@ -144,10 +147,8 @@ code {
 
 .side-nav-bar {
   box-sizing: border-box;
-  /* width: 10%; */
   min-width: 220px;
   min-height: 100vh;
-  /* background-color: rgba(48, 52, 63, .05); */
   background-color: #273469;
   box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.33);
   color: #fafaff;
@@ -208,9 +209,15 @@ code {
 /* Dashboard Page */
 .dashboard-page {
   margin-left: 180px;
+  margin-right: 60px;
   margin-top: 60px;
   margin-bottom: 60px;
-  width: 55vw;
+  /* width: 55vw; */
+
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  justify-content: space-between;
 }
 
 .dashboard-networth-title {
@@ -218,6 +225,11 @@ code {
   margin-bottom: 2px;
   font-size: 18px;
   font-weight: 300;
+}
+
+.dashboard-networth-subtitle {
+  margin: 0;
+  margin-top: 5px;
 }
 
 .networth-breakdown-div {
@@ -245,12 +257,82 @@ code {
   margin-bottom: 2px;
   font-size: 18px;
   font-weight: 300;
+  text-align: end;
 }
 
 .networth-breakdown-div .right-side h2 {
   font-size: 25px;
   font-weight: 300;
+  text-align: end;
 }
+
+.categories-container {
+  margin-top: 60px;
+}
+
+.categories-container .title {
+  font-size: 22;
+  font-weight: 400;
+  margin-bottom: 20px;
+}
+
+.recurring-container .title {
+  font-size: 22;
+  font-weight: 400;
+  margin-bottom: 20px;
+}
+
+.categories-list ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.categories-list li {
+  margin-bottom: 10px;
+}
+
+.category-card {
+  border: 1px solid black;
+  border-radius: 25px;
+  padding: 10px;
+  width: 400px;
+  border: 2px solid rgba(48, 52, 63, .1);
+  /* border-radius: 6px; */
+}
+
+.category-info-div {
+  width: 100%;
+  margin-left: 20px;
+}
+
+.category-card .category-img {
+  max-height: 50px;
+  max-width: 50px;
+  margin: 10px;
+}
+
+.category-card .category-name {
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.month-div {
+  margin-right: 60px;
+}
+
+.category-card .label-text {
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.category-card .amount-text {
+  font-size: 20px;
+  font-weight: 300;
+  margin: 0;
+  padding: 0;
+}
+
 
 /* History Page */
 .history-page {

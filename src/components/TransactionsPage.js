@@ -1,9 +1,9 @@
 import React from 'react'
-import { getInstitutionsAPI, getAccountsFromInstitutionIDAPI, getTransactionsAPI, getCategoriesAPI } from '../utils/api'
 import Dropdown from 'react-bootstrap/Dropdown';
 import FormControl from 'react-bootstrap/FormControl';
 import Pagination from 'react-bootstrap/Pagination';
 import Badge from 'react-bootstrap/Badge';
+import { DataConsumer } from '../contexts/DataContext'
 
 
 export default class TransactionsPage extends React.Component {
@@ -11,9 +11,6 @@ export default class TransactionsPage extends React.Component {
         super(props)
 
         this.state = {
-            transactions: [],
-            connectedInstitutions: [],
-            categories: [],
             sortBy: this.sortByChoices()[0],
             filterAccountSelection: "All Accounts",
             filterAccountIdSelection: -1,
@@ -23,11 +20,6 @@ export default class TransactionsPage extends React.Component {
             transactionSearchValue: "",
             paginationValue: 1
         }
-
-        this.fetchConnectedAccounts = this.fetchConnectedAccounts.bind(this)
-        this.updateInstitutionState = this.updateInstitutionState.bind(this)
-        this.fetchCategories = this.fetchCategories.bind(this)
-        this.fetchTransactions = this.fetchTransactions.bind(this)
     }
 
     sortByChoices = () => {
@@ -80,192 +72,97 @@ export default class TransactionsPage extends React.Component {
         this.onSetPagination(1)
     }
 
-    componentDidMount() {
-        // make api calls
-        this.fetchConnectedAccounts()
-    }
-
-    fetchConnectedAccounts() {
-        getInstitutionsAPI()
-            .then((institutions) => {
-                this.setState({
-                    connectedInstitutions: institutions
-                })
-                let promises = [];
-                for (let institution of institutions) {
-                    promises.push(getAccountsFromInstitutionIDAPI(institution.id))
-                }
-
-                Promise.all(promises)
-                    .then((allAccounts) => {
-                        for (let accounts of allAccounts) {
-                            this.updateInstitutionState(accounts)
-                        }
-                    })
-                this.fetchCategories()
-                this.fetchTransactions()
-            })
-            .catch((error) => {
-                console.warn("Error fetching account info: " + error)
-                // this.setState({
-                //     error: 'There was an error fetching the account info.'
-                // })
-            })
-    }
-
-    updateInstitutionState(accounts) {
-        this.setState(state => {
-            const connectedInstitutions = state.connectedInstitutions.map((inst, index) => {
-                if (inst.id === accounts.institutionId) {
-                    inst.accounts = accounts.accounts;
-                    return inst
-                } else {
-                    return inst
-                }
-            });
-
-            return {
-                connectedInstitutions: connectedInstitutions,
-            };
-        });
-    }
-
-
-    fetchCategories() {
-        getCategoriesAPI()
-            .then((fetchedCategories) => {
-                this.setState({ categories: fetchedCategories })
-            })
-            .catch((error) => {
-                console.warn("Error fetching transactions: " + error)
-                // this.setState({
-                //     error: 'There was an error fetching the account info.'
-                // })
-            })
-    }
-
-    fetchTransactions() {
-        this.state.connectedInstitutions.forEach((inst) => {
-            getTransactionsAPI(inst.id)
-                .then((fetchedTransactions) => {
-                    fetchedTransactions.map((t) => {
-                        let itemId = t.itemId
-                        let accountId = t.accountId
-                        let categoryId = t.categoryId
-
-                        let inst = this.state.connectedInstitutions.find((inst) => inst.id === itemId)
-                        t.instLogo = inst.logo
-                        t.instColor = inst.color
-                        t.instName = inst.name
-
-                        let account = inst.accounts.find((account) => account.id === accountId)
-                        t.accountMask = account.mask
-
-                        let category = this.state.categories.find((c) => c.id === categoryId)
-                        t.category = category.category
-                        return t
-                    })
-                    this.setState(({ transactions }) => {
-                        const newTransactions = [...transactions, ...fetchedTransactions]
-                        return { transactions: newTransactions };
-                    })
-                })
-                .catch((error) => {
-                    console.warn("Error fetching transactions: " + error)
-                    // this.setState({
-                    //     error: 'There was an error fetching the account info.'
-                    // })
-                })
-        })
-    }
-
     render() {
         return (
-            <div className='page'>
-                <div className='transactions-page'>
-                    <h3 className='page-title'>Transactions</h3>
-                    <div className='transactions-sort-div'>
-                        <Dropdown onSelect={(c) => this.onSelectSort(c)}>
-                            <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
-                                <div className='dropdown-sort-text-div'>
-                                    <p className='dropdown-sort-text-desc'>Sort By: </p>
-                                    <p className='dropdown-sort-text-main'>{this.state.sortBy}</p>
-                                </div>
-                            </Dropdown.Toggle>
+            <DataConsumer>
+                {({ connectedInstitutions, transactions, categories, loading }) => (
+                    <div className='page'>
+                        <div className='transactions-page'>
+                            <h3 className='page-title'>Transactions</h3>
+                            <div className='transactions-sort-div'>
+                                <Dropdown onSelect={(c) => this.onSelectSort(c)}>
+                                    <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
+                                        <div className='dropdown-sort-text-div'>
+                                            <p className='dropdown-sort-text-desc'>Sort By: </p>
+                                            <p className='dropdown-sort-text-main'>{this.state.sortBy}</p>
+                                        </div>
+                                    </Dropdown.Toggle>
 
-                            <Dropdown.Menu>
-                                {this.sortByChoices().map((choice) => (
-                                    <Dropdown.Item eventKey={choice}>{choice}</Dropdown.Item>
-                                ))}
-                            </Dropdown.Menu>
-                        </Dropdown>
-                        <Dropdown onSelect={(c) => this.onSelectAccountFilter(c)}>
-                            <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
-                                <div className='dropdown-sort-text-div'>
-                                    <p className='dropdown-sort-text-desc'>Account: </p>
-                                    <p className='dropdown-sort-text-main'>{this.state.filterAccountSelection}</p>
-                                </div>
-                            </Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        {this.sortByChoices().map((choice, index) => (
+                                            <Dropdown.Item key={index} eventKey={choice}>{choice}</Dropdown.Item>
+                                        ))}
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                                <Dropdown onSelect={(c) => this.onSelectAccountFilter(c)}>
+                                    <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
+                                        <div className='dropdown-sort-text-div'>
+                                            <p className='dropdown-sort-text-desc'>Account: </p>
+                                            <p className='dropdown-sort-text-main'>{this.state.filterAccountSelection}</p>
+                                        </div>
+                                    </Dropdown.Toggle>
 
-                            <Dropdown.Menu>
-                                <Dropdown.Item eventKey={JSON.stringify({ id: -1, name: "All Accounts" })}>{"All Accounts"}</Dropdown.Item>
-                                {this.state.connectedInstitutions.map((inst) => (
-                                    <React.Fragment>
-                                        <Dropdown.Header>{inst.name}</Dropdown.Header>
-                                        {inst.accounts.map((account) => {
-                                            return <Dropdown.Item eventKey={JSON.stringify({ id: account.id, name: `${account.name} ****${account.mask}` })}>{`${account.name} ****${account.mask}`}</Dropdown.Item>
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item eventKey={JSON.stringify({ id: -1, name: "All Accounts" })}>{"All Accounts"}</Dropdown.Item>
+                                        {connectedInstitutions.map((inst, index) => (
+                                            <React.Fragment key={index}>
+                                                <Dropdown.Header>{inst.name}</Dropdown.Header>
+                                                {inst.accounts.map((account, index) => {
+                                                    return <Dropdown.Item key={index} eventKey={JSON.stringify({ id: account.id, name: `${account.name} ****${account.mask}` })}>{`${account.name} ****${account.mask}`}</Dropdown.Item>
+                                                })}
+                                            </React.Fragment>
+                                        ))}
+                                    </Dropdown.Menu>
+                                </Dropdown>
+
+                                <Dropdown onSelect={(c) => this.onSelectCategoryFilter(c)}>
+                                    <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
+                                        <div className='dropdown-sort-text-div'>
+                                            <p className='dropdown-sort-text-desc'>Category: </p>
+                                            <p className='dropdown-sort-text-main'>{this.state.filterCategorySelection}</p>
+                                        </div>
+                                    </Dropdown.Toggle>
+
+                                    <Dropdown.Menu>
+                                        <FormControl
+                                            autoFocus
+                                            className="mx-3 my-2 w-auto"
+                                            placeholder="Type to filter..."
+                                            onChange={(e) => this.onChangeCategorySearch(e.target.value)}
+                                            value={this.state.filterCategorySearchValue}
+                                        />
+                                        <Dropdown.Item eventKey={JSON.stringify({ id: -1, name: "All Categories" })}>{"All Categories"}</Dropdown.Item>
+                                        {categories.filter((category) => category.category.toLowerCase().includes(this.state.filterCategorySearchValue.toLowerCase())).map((category, index) => {
+                                            return <Dropdown.Item key={index} eventKey={JSON.stringify({ id: category.id, name: category.category })}>{category.category}</Dropdown.Item>
                                         })}
-                                    </React.Fragment>
-                                ))}
-                            </Dropdown.Menu>
-                        </Dropdown>
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </div>
 
-                        <Dropdown onSelect={(c) => this.onSelectCategoryFilter(c)}>
-                            <Dropdown.Toggle id="dropdown-basic" className="dropdown-sort">
-                                <div className='dropdown-sort-text-div'>
-                                    <p className='dropdown-sort-text-desc'>Category: </p>
-                                    <p className='dropdown-sort-text-main'>{this.state.filterCategorySelection}</p>
-                                </div>
-                            </Dropdown.Toggle>
-
-                            <Dropdown.Menu>
+                            <div className='transactions-search-div'>
                                 <FormControl
-                                    autoFocus
-                                    className="mx-3 my-2 w-auto"
-                                    placeholder="Type to filter..."
-                                    onChange={(e) => this.onChangeCategorySearch(e.target.value)}
-                                    value={this.state.filterCategorySearchValue}
+                                    placeholder="Type to search..."
+                                    aria-label="Search Transactions"
+                                    onChange={(e) => this.onSearchTransactions(e.target.value)}
+                                    value={this.state.transactionSearchValue}
                                 />
-                                <Dropdown.Item eventKey={JSON.stringify({ id: -1, name: "All Categories" })}>{"All Categories"}</Dropdown.Item>
-                                {this.state.categories.filter((category) => category.category.toLowerCase().includes(this.state.filterCategorySearchValue.toLowerCase())).map((category) => {
-                                    return <Dropdown.Item eventKey={JSON.stringify({ id: category.id, name: category.category })}>{category.category}</Dropdown.Item>
-                                })}
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </div>
+                            </div>
 
-                    <div className='transactions-search-div'>
-                        <FormControl
-                            placeholder="Type to search..."
-                            aria-label="Search Transactions"
-                            onChange={(e) => this.onSearchTransactions(e.target.value)}
-                            value={this.state.transactionSearchValue}
-                        />
+                            <TransactionsList
+                                transactions={transactions}
+                                sortBy={this.state.sortBy}
+                                sortByChoices={this.sortByChoices()}
+                                filterAccountIdSelection={this.state.filterAccountIdSelection}
+                                filterCategoryIdSelection={this.state.filterCategoryIdSelection}
+                                transactionSearchValue={this.state.transactionSearchValue}
+                                currentPage={this.state.paginationValue}
+                                onSetPagination={this.onSetPagination}
+                            />
+                            {/* <div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/good-ware" title="Good Ware">Good Ware</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/becris" title="Becris">Becris</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/monkik" title="monkik">monkik</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/itim2101" title="itim2101">itim2101</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/srip" title="srip">srip</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/dmitri13" title="dmitri13">dmitri13</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/eucalyp" title="Eucalyp">Eucalyp</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/surang" title="surang">surang</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/wanicon" title="wanicon">wanicon</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/xnimrodx" title="xnimrodx">xnimrodx</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/ultimatearm" title="ultimatearm">ultimatearm</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/fjstudio" title="fjstudio">fjstudio</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/iconixar" title="iconixar">iconixar</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">Pixel perfect</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/smalllikeart" title="smalllikeart">smalllikeart</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div> */}
+                        </div>
                     </div>
-
-                    <TransactionsList
-                        transactions={this.state.transactions}
-                        sortBy={this.state.sortBy}
-                        sortByChoices={this.sortByChoices()}
-                        filterAccountIdSelection={this.state.filterAccountIdSelection}
-                        filterCategoryIdSelection={this.state.filterCategoryIdSelection}
-                        transactionSearchValue={this.state.transactionSearchValue}
-                        currentPage={this.state.paginationValue}
-                        onSetPagination={this.onSetPagination}
-                    />
-                    {/* <div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/good-ware" title="Good Ware">Good Ware</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/becris" title="Becris">Becris</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/monkik" title="monkik">monkik</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/itim2101" title="itim2101">itim2101</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/srip" title="srip">srip</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/dmitri13" title="dmitri13">dmitri13</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/eucalyp" title="Eucalyp">Eucalyp</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/surang" title="surang">surang</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/wanicon" title="wanicon">wanicon</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/xnimrodx" title="xnimrodx">xnimrodx</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/ultimatearm" title="ultimatearm">ultimatearm</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/fjstudio" title="fjstudio">fjstudio</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/iconixar" title="iconixar">iconixar</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">Pixel perfect</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/smalllikeart" title="smalllikeart">smalllikeart</a> from <a href="https://www.flaticon.com/"     title="Flaticon">www.flaticon.com</a></div> */}
-                </div>
-            </div>
+                )}
+            </DataConsumer>
         )
     }
 }
@@ -282,14 +179,14 @@ function TransactionsList({ transactions, sortBy, sortByChoices, filterAccountId
     }
 
     if (filterAccountIdSelection !== -1) {
-        transactions = transactions.filter((t) => t.accountId == filterAccountIdSelection)
+        transactions = transactions.filter((t) => t.accountId === filterAccountIdSelection)
     }
 
     if (filterCategoryIdSelection !== -1) {
-        transactions = transactions.filter((t) => t.categoryId == filterCategoryIdSelection)
+        transactions = transactions.filter((t) => t.categoryId === filterCategoryIdSelection)
     }
 
-    if (transactionSearchValue != "") {
+    if (transactionSearchValue !== "") {
         transactions = transactions.filter((t) => t.name.toLowerCase().includes(transactionSearchValue.toLowerCase()) || t.category.toLowerCase().includes(transactionSearchValue.toLowerCase()))
     }
 
@@ -335,9 +232,9 @@ function TransactionsList({ transactions, sortBy, sortByChoices, filterAccountId
                         <Pagination.Prev onClick={() => onSetPagination(Math.max(currentPage - 1, 1))} />
                         {pagesArray.map((e, index) => {
                             if (e === -1) {
-                                return <Pagination.Ellipsis />
+                                return <Pagination.Ellipsis key={index}/>
                             } else {
-                                return <Pagination.Item active={e === currentPage} onClick={() => onSetPagination(e)}>{e}</Pagination.Item>
+                                return <Pagination.Item key={index} active={e === currentPage} onClick={() => onSetPagination(e)}>{e}</Pagination.Item>
                             }
                         })}
                         <Pagination.Next onClick={() => onSetPagination(Math.min(currentPage + 1, pages))} />

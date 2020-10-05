@@ -1,8 +1,9 @@
 import React from 'react'
-import { getInstitutionsAPI, getAccountsFromInstitutionIDAPI, toggleAccountSelectionAPI, updateInstitutionAPI, updateAccountsAPI, getLinkTokenAPI, linkBankAccountAPI, removeBankAccountAPI } from '../utils/api'
+import { updateInstitutionAPI, updateAccountsAPI, getLinkTokenAPI, linkBankAccountAPI, removeBankAccountAPI } from '../utils/api'
 import { usePlaidLink } from 'react-plaid-link';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { DataConsumer } from '../contexts/DataContext';
 
 
 export default class AccountsPage extends React.Component {
@@ -11,97 +12,11 @@ export default class AccountsPage extends React.Component {
         super(props)
 
         this.state = {
-            connectedInstitutions: [],
             linkToken: ""
         }
 
-        this.fetchConnectedAccounts = this.fetchConnectedAccounts.bind(this)
-        this.updateInstitutionState = this.updateInstitutionState.bind(this)
-        this.toggleAccountSelect = this.toggleAccountSelect.bind(this)
         this.addInstitution = this.addInstitution.bind(this)
         this.onAddInstitutionSuccess = this.onAddInstitutionSuccess.bind(this)
-    }
-
-    componentDidMount() {
-        // make api calls
-        this.fetchConnectedAccounts()
-    }
-
-    fetchConnectedAccounts() {
-        getInstitutionsAPI()
-            .then((institutions) => {
-                this.setState({
-                    connectedInstitutions: institutions
-                })
-                let promises = [];
-                for (let institution of institutions) {
-                    promises.push(getAccountsFromInstitutionIDAPI(institution.id))
-                }
-
-                Promise.all(promises)
-                    .then((allAccounts) => {
-                        for (let accounts of allAccounts) {
-                            this.updateInstitutionState(accounts)
-                        }
-                    })
-
-            })
-            .catch((error) => {
-                console.warn("Error fetching account info: " + error)
-                // this.setState({
-                //     error: 'There was an error fetching the account info.'
-                // })
-            })
-    }
-
-    updateInstitutionState(accounts) {
-        this.setState(state => {
-            const connectedInstitutions = state.connectedInstitutions.map((inst, index) => {
-                if (inst.id === accounts.institutionId) {
-                    inst.accounts = accounts.accounts;
-                    return inst
-                } else {
-                    return inst
-                }
-            });
-
-            return {
-                connectedInstitutions: connectedInstitutions,
-            };
-        });
-    }
-
-    toggleAccountSelect(itemId, accountId, selected) {
-        toggleAccountSelectionAPI(itemId, accountId, selected)
-            .then(() => {
-                // this.fetchConnectedAccounts()
-                this.setState(state => {
-                    const connectedInstitutions = state.connectedInstitutions.map((inst, index) => {
-                        if (inst.id === itemId) {
-                            inst.accounts = inst.accounts.map((account, index) => {
-                                if (account.id === accountId) {
-                                    account.selected = selected
-                                    return account
-                                } else {
-                                    return account
-                                }
-                            })
-                            return inst
-                        } else {
-                            return inst
-                        }
-                    });
-
-                    return {
-                        connectedInstitutions: connectedInstitutions,
-                    };
-                });
-            }).catch((error) => {
-                console.warn("Error fetching toggling account: " + error)
-                // this.setState({
-                //     error: 'There was an error fetching the account info.'
-                // })
-            })
     }
 
     addInstitution() {
@@ -133,29 +48,32 @@ export default class AccountsPage extends React.Component {
 
     render() {
         return (
-            <div className='page'>
-                <div className='accounts-page'>
-                    <div className='row'>
-                        <h3 className='page-title'>Accounts</h3>
-                        <button className='accounts-connect-btn' onClick={this.addInstitution}>Connect Account</button>
-                        {this.state.linkToken !== "" &&
-                            <PlaidLinkModal linkToken={this.state.linkToken} onCancel={() => this.setState({ linkToken: "" })} onLinkSuccess={(token, metadata) => this.onAddInstitutionSuccess(token, metadata)} />
-                        }
+            <DataConsumer>
+                {({ connectedInstitutions, fetchConnectedAccounts }) => (
+                    <div className='page'>
+                        <div className='accounts-page'>
+                            <div className='row'>
+                                <h3 className='page-title'>Accounts</h3>
+                                <button className='accounts-connect-btn' onClick={this.addInstitution}>Connect Account</button>
+                                {this.state.linkToken !== "" &&
+                                    <PlaidLinkModal linkToken={this.state.linkToken} onCancel={() => this.setState({ linkToken: "" })} onLinkSuccess={(token, metadata) => this.onAddInstitutionSuccess(token, metadata)} />
+                                }
+                            </div>
+                            <InstitutionsList institutions={connectedInstitutions} fetchConnectedAccounts={fetchConnectedAccounts} />
+                        </div>
                     </div>
-                    <InstitutionsList institutions={this.state.connectedInstitutions} toggleAccountSelect={this.toggleAccountSelect} fetchConnectedAccounts={this.fetchConnectedAccounts} />
-                </div>
-            </div>
-
+                )}
+            </DataConsumer>
         )
     }
 }
 
-function InstitutionsList({ institutions, toggleAccountSelect, fetchConnectedAccounts }) {
+function InstitutionsList({ institutions, fetchConnectedAccounts }) {
     return (
         <ul className='institutions-list'>
             {institutions.map((institution, index) => {
                 return (
-                    <InstitutionTile key={index} institution={institution} toggleAccountSelect={toggleAccountSelect} fetchConnectedAccounts={fetchConnectedAccounts} />
+                    <InstitutionTile key={index} institution={institution} fetchConnectedAccounts={fetchConnectedAccounts} />
                 )
             })}
         </ul>
@@ -187,7 +105,6 @@ class InstitutionTile extends React.Component {
         this.setState({ loading: true })
         updateInstitutionAPI(itemId)
             .then(() => {
-                // this.fetchConnectedAccounts()
                 updateAccountsAPI(itemId)
                     .then(() => {
                         this.props.fetchConnectedAccounts()
@@ -203,11 +120,11 @@ class InstitutionTile extends React.Component {
     }
 
     attemptRemoveBank = (institutionId) => {
-        this.setState({removeBankAttempt: true, removeBankID: institutionId})
-     }
+        this.setState({ removeBankAttempt: true, removeBankID: institutionId })
+    }
 
     cancelRemoveBank = () => {
-        this.setState({removeBankAttempt: false, removeBankID: -1})
+        this.setState({ removeBankAttempt: false, removeBankID: -1 })
     }
 
 
@@ -231,7 +148,7 @@ class InstitutionTile extends React.Component {
         const loaderStyle = {
             display: this.state.loading ? "block" : "none",
         };
-        const { institution, toggleAccountSelect } = this.props
+        const { institution } = this.props
         const { id, name, status, logo, color, accounts } = institution
         return (
             <div className='institution-card'>
@@ -255,7 +172,7 @@ class InstitutionTile extends React.Component {
                     </div>
                 </div>
                 < hr className='institution-line' />
-                <AccountsList accounts={accounts} instLogo={logo} instColor={color} instName={name} toggleAccountSelect={toggleAccountSelect} />
+                <AccountsList accounts={accounts} instLogo={logo} instColor={color} instName={name} />
                 {this.state.removeBankAttempt === true && <RemoveBankModal removeBankAccount={() => this.removeInstitution(this.state.removeBankID)} cancelModal={() => this.cancelRemoveBank()} />}
             </div>
         )
@@ -263,7 +180,7 @@ class InstitutionTile extends React.Component {
 
 }
 
-function AccountsList({ accounts, instLogo, instColor, instName, toggleAccountSelect }) {
+function AccountsList({ accounts, instLogo, instColor, instName }) {
     return (
         <ul className='accounts-list'>
             {accounts.map((account) => {
@@ -283,7 +200,6 @@ function AccountsList({ accounts, instLogo, instColor, instName, toggleAccountSe
                             instName={instName}
                             accountId={id}
                             itemId={itemId}
-                            toggleAccountSelect={toggleAccountSelect}
                         />
                     </li>
                 )
@@ -294,7 +210,8 @@ function AccountsList({ accounts, instLogo, instColor, instName, toggleAccountSe
 
 class AccountCard extends React.Component {
     render() {
-        const { name, mask, balance, availableBalance, type, subtype, selected, instLogo, instColor, instName, accountId, itemId, toggleAccountSelect } = this.props
+        // also has access to type, accountId, itemId in props
+        const { name, mask, balance, availableBalance, subtype, instLogo, instColor, instName } = this.props
         return (
             <div className='account-card'>
                 <div className='account-card-left-side'>
@@ -314,7 +231,6 @@ class AccountCard extends React.Component {
                 <div className='account-card-right-side'>
                     <h2 className='account-mask'>∙∙∙∙ {mask}</h2>
                 </div>
-                {/* <input className='account-checkbox' type="checkbox" checked={selected} onChange={() => toggleAccountSelect(itemId, accountId, !selected)} /> */}
             </div>
         )
     }

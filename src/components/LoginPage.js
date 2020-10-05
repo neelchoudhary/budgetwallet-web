@@ -65,7 +65,7 @@ export default class LoginPage extends React.Component {
                         </div>
                         <div className='row sign-in-options'>
                             <a href="signup">Create an Account</a>
-                            <a href="#">Forgot my Password</a>
+                            <a href="/#">Forgot my Password</a>
                         </div>
                     </form>
                 </div>
