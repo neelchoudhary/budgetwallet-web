@@ -12,6 +12,7 @@ export default class CreateAccountPage extends React.Component {
             password: "",
             repassword: "",
             signUpError: "",
+            createdAccount: "",
         }
 
         this.signUp = this.signUp.bind(this)
@@ -30,10 +31,10 @@ export default class CreateAccountPage extends React.Component {
             
             signupAPI(this.state.name, this.state.email, this.state.password)
                 .then(() => {
-                    this.props.onLogin()
+                    this.setState({createdAccount: true})
                 }).catch((error) => {
                     console.warn("Error signing in: " + error)
-                    this.setState({ loginError: "Something went wrong, please try again." })
+                    this.setState({ loginError: "Something went wrong, please try again.", createdAccount: false})
                 })
         }
     }
@@ -45,7 +46,7 @@ export default class CreateAccountPage extends React.Component {
     }
 
     render() {
-        if (this.props.isAuthed === true) {
+        if (this.state.createdAccount === true) {
             return <Redirect to="/accounts" />;
         }
 

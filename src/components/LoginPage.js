@@ -10,6 +10,7 @@ export default class LoginPage extends React.Component {
             email: "",
             password: "",
             loginError: "",
+            isAuthed: false,
         }
 
         this.signIn = this.signIn.bind(this)
@@ -21,17 +22,17 @@ export default class LoginPage extends React.Component {
         var formStatus = ele.checkValidity();
         ele.reportValidity();
         if (formStatus) {
-        signInAPI(this.state.email, this.state.password)
-            .then(() => {
-                this.props.onLogin()
-            }).catch((error) => {
-                console.warn("Error signing in: " + error)
-                if (error.message === "Auth error") {
-                    this.setState({ loginError: "Incorrect email/password combination, please try again." })
-                } else {
-                    this.setState({ loginError: "Something went wrong, please try again." })
-                }
-            })
+            signInAPI(this.state.email, this.state.password)
+                .then(() => {
+                    this.setState({ isAuthed: true })
+                }).catch((error) => {
+                    console.warn("Error signing in: " + error)
+                    if (error.message === "Auth error") {
+                        this.setState({ loginError: "Incorrect email/password combination, please try again.", isAuthed: false })
+                    } else {
+                        this.setState({ loginError: "Something went wrong, please try again.", isAuthed: false })
+                    }
+                })
         }
     }
 
@@ -42,7 +43,7 @@ export default class LoginPage extends React.Component {
     }
 
     render() {
-        if (this.props.isAuthed === true) {
+        if (this.state.isAuthed === true) {
             return <Redirect to="/accounts" />;
         }
 

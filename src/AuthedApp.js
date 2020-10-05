@@ -8,44 +8,27 @@ import LoginPage from './components/LoginPage';
 import HistoryPage from './components/HistoryPage';
 import CreateAccountPage from './components/CreateAccountPage';
 import DashboardPage from './components/DashboardPage';
-import { getInstitutionsAPI, getAccountsFromInstitutionIDAPI, getTransactionsAPI, getCategoriesAPI } from './utils/api'
+import { getInstitutionsAPI, getAccountsFromInstitutionIDAPI, getTransactionsAPI, getCategoriesAPI, verifyAuthAPI } from './utils/api'
 import { DataProvider, DataConsumer } from './contexts/DataContext'
 
 
 export default class AuthedApp extends React.Component {
 
-  constructor(props) {
-    super(props)
-
-    this.state = {
-      isAuthed: true, // FOR DEVELOPMENT ONLY (should be false)
-      onLogin: () => {
-        this.setState({ isAuthed: true });
-      },
-      onLogout: () => {
-        this.setState({ isAuthed: false });
-      },
-    }
-
-  }
-
   render() {
-
-    const { isAuthed, onLogin, onLogout } = this.state
 
     return (
       <div>
         <Switch>
           <Route exact path='/login' render={props =>
             <div className="App">
-              <LoginPage onLogin={onLogin} isAuthed={isAuthed} />
+              <LoginPage />
             </div>} />
           <Route exact path='/signup' render={props =>
             <div className="App">
-              <CreateAccountPage onLogin={onLogin} isAuthed={isAuthed} />
+              <CreateAccountPage />
             </div>} />
           <Route exact path='/dashboard' render={props => (
-            <AuthRequired isAuthed={isAuthed}>
+            <AuthRequired>
               <SideNavBar />
               <DataConsumer>
                 {({ connectedInstitutions, transactions, categories, loading }) => (
@@ -55,7 +38,7 @@ export default class AuthedApp extends React.Component {
             </AuthRequired>
           )} />
           <Route exact path='/history' render={props => (
-            <AuthRequired isAuthed={isAuthed}>
+            <AuthRequired>
               <SideNavBar />
               <DataConsumer>
                 {({ connectedInstitutions, loading }) => (
@@ -65,21 +48,21 @@ export default class AuthedApp extends React.Component {
             </AuthRequired>
           )} />
           <Route exact path='/transactions' render={props => (
-            <AuthRequired isAuthed={isAuthed}>
+            <AuthRequired>
               <SideNavBar />
               <TransactionsPage />
             </AuthRequired>
           )} />
           <Route exact path='/accounts' render={props => (
-            <AuthRequired isAuthed={isAuthed}>
+            <AuthRequired>
               <SideNavBar />
               <AccountsPage />
             </AuthRequired>
           )} />
           <Route exact path='/logout' render={props => (
-            <AuthRequired isAuthed={isAuthed}>
+            <AuthRequired>
               <SideNavBar />
-              <LogoutPage onLogout={onLogout} />
+              <LogoutPage />
             </AuthRequired>
           )} />
           <Route render={props =>
@@ -93,6 +76,13 @@ export default class AuthedApp extends React.Component {
   }
 }
 
+
+const authStatus = {
+  LOADING: 'loading',
+  TRUE: 'true',
+  FALSE: 'false',
+}
+
 class AuthRequired extends React.Component {
   constructor(props) {
     super(props)
@@ -103,6 +93,7 @@ class AuthRequired extends React.Component {
       transactions: [],
       fetchConnectedAccounts: () => this.fetchConnectedAccounts(),
       loading: true,
+      isAuthed: authStatus.LOADING,
     }
 
     this.fetchConnectedAccounts = this.fetchConnectedAccounts.bind(this)
@@ -112,13 +103,23 @@ class AuthRequired extends React.Component {
   }
 
   async componentDidMount() {
-    // make api calls
-    if (this.props.isAuthed === true) {
-      await this.fetchCategories()
-      await this.fetchConnectedAccounts()
-      await this.fetchTransactions()
-      this.setState({loading: false})
-    }
+    await verifyAuthAPI()
+      .then(async (success) => {
+        console.log("SUCCESS: " + success)
+        if (success) {
+          this.setState({ loading: true, isAuthed: authStatus.TRUE })
+          await this.fetchCategories()
+          await this.fetchConnectedAccounts()
+          await this.fetchTransactions()
+          this.setState({ loading: false })
+        } else {
+          this.setState({ loading: false, isAuthed: authStatus.FALSE })
+        }
+      })
+      .catch((error) => {
+        this.setState({ loading: false, isAuthed: authStatus.FALSE })
+        console.warn("Verify auth api: " + error)
+      })
   }
 
   // Gets all accounts and institutions from server (no dependencies)
@@ -221,13 +222,22 @@ class AuthRequired extends React.Component {
   }
 
   render() {
-    const { isAuthed, children } = this.props
-    return (isAuthed === false) ?
-      <Redirect to="/login" /> :
-      (<div className="App">
-        <DataProvider value={this.state}>
-          {children}
-        </DataProvider>
-      </div>)
+    const { children } = this.props
+    const { isAuthed } = this.state
+    if (isAuthed === authStatus.LOADING) {
+      return null
+    } else if (isAuthed === authStatus.TRUE) {
+      return (
+        <div className="App">
+          <DataProvider value={this.state}>
+            {children}
+          </DataProvider>
+        </div>
+      )
+    } else if (isAuthed === authStatus.FALSE) {
+      return <Redirect to="/login" />
+    } else {
+      return null
+    }
   }
 }
