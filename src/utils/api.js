@@ -667,7 +667,7 @@ export function getRecurringTransactionsAPI() {
 
 
 function obfuscateAmount(balance) {
-    const obfuscate = false
+    const obfuscate = true
     if (obfuscate) {
         return Math.floor(Math.random() * 10);
     } else {
