@@ -1,8 +1,6 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: rgb(48, 52, 63);
@@ -25,7 +23,8 @@ code {
   border-top: 8px solid black;
   width: 25px;
   height: 25px;
-  -webkit-animation: spin 1.5s linear infinite; /* Safari */
+  -webkit-animation: spin 1.5s linear infinite;
+  /* Safari */
   animation: spin 1.5s linear infinite;
 }
 
@@ -56,7 +55,14 @@ code {
   width: 100%;
 }
 
+@media (max-width: 1100px) {
+  .large {
+    display: none;
+  }
+}
+
 /* CREATE ACCOUNT PAGE */
+
 .sign-up-page {
   display: flex;
   flex-direction: column;
@@ -75,6 +81,7 @@ code {
 }
 
 /* LOGIN PAGE */
+
 .sign-in-page {
   /* display: flex; */
   /* flex-direction: column; */
@@ -83,7 +90,6 @@ code {
   /* justify-content: center; */
   /* align-items: center; */
 }
-
 
 .sign-in-container {
   display: flex;
@@ -150,7 +156,7 @@ code {
   min-width: 220px;
   min-height: 100vh;
   background-color: #273469;
-  box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.33);
+  box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.33);
   color: #fafaff;
 }
 
@@ -207,18 +213,32 @@ code {
 }
 
 /* Dashboard Page */
-.dashboard-page {
-  margin-left: 180px;
-  margin-right: 60px;
-  margin-top: 60px;
-  margin-bottom: 60px;
-  /* width: 55vw; */
 
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  justify-content: space-between;
+@media (min-width: 1101px) {
+  .dashboard-page {
+    margin-left: 180px;
+    margin-right: 60px;
+    margin-top: 60px;
+    margin-bottom: 60px;
+    /* width: 55vw; */
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    justify-content: space-between;
+  }
 }
+
+@media (max-width: 1100px) {
+  .dashboard-page {
+    margin: 20px;
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    justify-content: space-between;
+  }
+}
+
+
 
 .dashboard-networth-title {
   margin: 0;
@@ -333,23 +353,40 @@ code {
   padding: 0;
 }
 
-
 /* History Page */
-.history-page {
-  margin-left: 180px;
-  margin-top: 60px;
-  margin-bottom: 60px;
-  width: 55vw;
+@media (min-width: 1101px) {
+  .history-page {
+    margin-left: 180px;
+    margin-top: 60px;
+    margin-bottom: 60px;
+    width: 55vw;
+  }
 }
+
+@media (max-width: 1100px) {
+  .history-page {
+    margin: 20px;
+  }
+}
+
 
 /* Transactions Page */
-
-.transactions-page {
-  margin-left: 180px;
-  margin-top: 60px;
-  margin-bottom: 60px;
-  width: 55vw;
+@media (min-width: 1101px) {
+  .transactions-page {
+    margin-left: 180px;
+    margin-top: 60px;
+    margin-bottom: 60px;
+    width: 55vw;
+  }
 }
+
+@media (max-width: 1100px) {
+  .transactions-page {
+    margin: 20px;
+  }
+}
+
+
 
 .transactions-sort-div {
   margin-top: 40px;
@@ -367,7 +404,7 @@ code {
   margin-top: 50px;
 }
 
-.transactions-list > div {
+.transactions-list>div {
   margin-bottom: 15px;
   align-items: flex-end;
 }
@@ -454,26 +491,33 @@ code {
   text-align: center;
 }
 
-
 /* Accounts Page */
 
-.accounts-page {
-  margin-left: 180px;
-  margin-top: 60px;
-  width: 55vw;
+@media (min-width: 801px) {
+  .accounts-page {
+    margin-left: 180px;
+    margin-top: 60px;
+    width: 55vw;
+  }
+}
+
+@media (max-width: 800px) {
+  .accounts-page {
+    margin: 20px;
+  }
 }
 
 .accounts-connect-btn {
-	background-color:#C6ADFF;
-	border-radius:4px;
+  background-color: #C6ADFF;
+  border-radius: 4px;
   /* border:1px solid #A985FF; */
-  border:1px solid #C6ADFF;
-	display:inline-block;
-	cursor:pointer;
+  border: 1px solid #C6ADFF;
+  display: inline-block;
+  cursor: pointer;
   /* color:rgba(48, 52, 63, .9); */
   color: white;
-	font-size:16px;
-	padding:12px 20px;
+  font-size: 16px;
+  padding: 12px 20px;
 }
 
 .institutions-list {
@@ -503,18 +547,19 @@ code {
   /* display: inline-block; */
 }
 
-
 /* Dropdown Content (Hidden by Default) */
+
 .dropdown-content {
   position: absolute;
   margin-top: 110px;
   background-color: #f9f9f9;
   min-width: 180px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
 }
 
 /* Links inside the dropdown */
+
 .dropdown-content button {
   background: none;
   color: black;
@@ -523,20 +568,22 @@ code {
   text-align: center;
   border: none;
   width: 100%;
-
   /* display: block; */
 }
 
 /* Change color of dropdown links on hover */
-.dropdown-content a:hover {background-color: #f1f1f1}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1
+}
 
 /* Show the dropdown menu on hover */
+
 .institution-manage:hover .dropdown-content {
   display: block;
 }
 
-
-.institution-header h3{
+.institution-header h3 {
   margin: 0;
   font-weight: 300;
   font-size: 22px;
@@ -570,7 +617,7 @@ code {
   /* border: 1px solid #30343F; */
   margin: 20px 0px;
   padding: 5px 10px;
-  width: 50vw;
+  /* width: 50vw; */
   justify-content: space-between;
   align-items: center;
   background-color: #FFFFFF;
@@ -625,7 +672,7 @@ code {
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color:#C6ADFF !important;
+  background-color: #C6ADFF !important;
   border-color: #A985FF !important;
 }
 

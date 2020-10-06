@@ -39,7 +39,7 @@ export default class SideNavBar extends React.Component {
         const { selected } = this.state
 
         return (
-            <div className='side-nav-bar'>
+            <div className='side-nav-bar large'>
                 <h1 className='nav-app-title'>BudgetWallet</h1>
                 <hr className='nav-line' />
                 <ul className='nav-ul'>
